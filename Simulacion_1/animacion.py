@@ -28,14 +28,14 @@ graph, = ax.plot(lambda_,10*np.log10(reflectancia))
 ax.set_ylabel(r"dB")
 ax.set_xlabel(r"$\lambda$")
 ax.set_xlim([1500,1550])
-ax.set_ylim([-10,5])
+ax.set_ylim([-40,-5])
 ax.set_title("Simulación Fabry-Perot 2 Cavidades en serie.")
 
 def actualizar(i):
     di = 0.02
     L1 = round((i+1)*di,2)
-    label = f"Simulación Fabry-Perot 2 Cavidades en serie :: $L_{1}$ = {L1}"
-    obj = FabryPerot_2GAP(lambda_inicial=1500,lambda_final= 1600,L_medio_1 = 0.4, L_medio_2=0.8, eta_medio_1 = L1, eta_medio_2 = 1.332, eta_medio_3=1.48)
+    label = f"Simulación Fabry-Perot 2 Cavidades en serie :: $L_{1}$ = {L1} mm"
+    obj = FabryPerot_2GAP(lambda_inicial=1500,lambda_final= 1600,L_medio_1 = L1, L_medio_2=0.8, eta_medio_1 = 1.0, eta_medio_2 = 1.332, eta_medio_3=1.48)
     reflectancia_db = 10*np.log10(obj.R())
     graph.set_ydata(reflectancia_db)
     ax.set_title(label)
