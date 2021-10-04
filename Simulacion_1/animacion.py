@@ -11,7 +11,7 @@ Codigo para crear animacion de la simulacion FabryPerot
 
 import numpy as np
 import matplotlib.pyplot as plt
-from matplotlib.animation import FuncAnimation
+from matplotlib.animation import FuncAnimation, writers
 from FabryPerot.Clase import FabryPerot_2GAP
 
 # Creamos la figura
@@ -44,4 +44,9 @@ def actualizar(i):
 
 anim = FuncAnimation(fig, actualizar, repeat = True, frames= np.arange(0,50), interval = 1000 )
 
-plt.show()
+#plt.show()
+
+# Guardaremos la animacion
+Writer = writers["ffmpeg"]
+writer = Writer(fps=1, metadata={"artist":"IAGP"}, bitrate=1800)
+anim.save("Variacion_L1.mp4",writer)
