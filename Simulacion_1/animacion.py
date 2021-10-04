@@ -27,7 +27,8 @@ reflectancia = obj.R()
 graph, = ax.plot(lambda_,10*np.log10(reflectancia))
 ax.set_ylabel(r"dB")
 ax.set_xlabel(r"$\lambda$")
-ax.set_xlim([1500,1503])
+ax.set_xlim([1500,1550])
+ax.set_ylim([-10,5])
 ax.set_title("Simulación Fabry-Perot 2 Cavidades en serie.")
 
 def actualizar(i):
