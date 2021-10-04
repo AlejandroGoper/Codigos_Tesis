@@ -21,7 +21,7 @@ class FabryPerot_2GAP:
     """
     def __init__(self, lambda_inicial, lambda_final, L_medio_1, L_medio_2, eta_medio_1, eta_medio_2, 
                  eta_medio_3, eta_fibra=1.48, alpha_medio_1=0, alpha_medio_2=0, 
-                 A_interfaz_1=0, A_interfaz_2=0,R3 = 0.9):
+                 A_interfaz_1=0, A_interfaz_2=0):
         # Array de longitudes de onda de la simulacion
         self.lambda_ = arange(lambda_inicial, lambda_final, 0.01)
         
@@ -42,9 +42,6 @@ class FabryPerot_2GAP:
         # Coeficientes de perdidas en las interfaces
         self.A_1 = A_interfaz_1
         self.A_2 = A_interfaz_2
-        
-        # Reflectancia de la tercera superficie
-        self.R3 = R3
 
     """
     Metodo R:
@@ -56,7 +53,7 @@ class FabryPerot_2GAP:
         s2_2 = self.S2_2()
         R1 = self.R1()
         R2 = self.R2()
-        R3 = self.R3
+        R3 = self.R3()
         phi_1 = self.phi_1(self.lambda_)
         phi_2 = self.phi_2(self.lambda_)
         theta_1 = self.theta_1()
@@ -127,6 +124,14 @@ class FabryPerot_2GAP:
     """
     def R2(self):
         r = (self.eta_2 - self.eta_0)/(self.eta_2+self.eta_0)
+        return r*r
+    
+    """
+    Metodo R3:
+        Determina la reflectancia de la segunda interfaz
+    """
+    def R3(self):
+        r = (self.eta_3 - self.eta_2)/(self.eta_2+self.eta_3)
         return r*r
     
     """
