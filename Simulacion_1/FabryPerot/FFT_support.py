@@ -13,7 +13,8 @@ Scripts auxiliares para la correcta interpretacion y visualizacion de la FFT
 """
 
 
-from numpy import floor, fft,fftfreq
+from numpy import floor 
+from numpy.fft import fft,fftfreq
 """
  La lógica de esta función es la siguiente:
     Toma unicamente los valores positivos de la fft (indices desde 0 hasta int(n/2)-1 [si n es par] 
