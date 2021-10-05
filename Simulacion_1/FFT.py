@@ -13,8 +13,7 @@ Codigo para la transformada de Fourier de la señal obtenida en main
 import numpy as np
 import matplotlib.pyplot as plt
 from FabryPerot.Clase import FabryPerot_2GAP
-from numpy.fft import fft,fftfreq
-from FabryPerot.FFT_support import recorte_frec_negativas_fft,calcular_verdadera_amplitud
+from FabryPerot.FFT_support import encontrar_FFT
 
 """
 ==============================================================================
@@ -40,56 +39,12 @@ lambda_ = np.arange(lambda_inicial,lambda_final, T_muestreo_lambda) #nanometros
 obj = FabryPerot_2GAP(lambda_inicial=lambda_inicial,lambda_final= lambda_final,L_medio_1 = 0.4, L_medio_2=0.8, eta_medio_1 = 1.0, eta_medio_2 = 1.332, eta_medio_3=1.48)
 reflectancia = obj.R()
 
-
-fft_reflectancia = fft(reflectancia)
-
-# Cambio de variable 
-
-beta = 1/lambda_ # Unidades de beta [beta] = 1/nm
-
-# Periodo de muestreo 
-
-T_muestreo_beta = beta[0] - beta[1]
- 
-
-"""
-Esta funcion calcula el vector de "frecuencias" de la transformada de fourier, vease
-
-https://numpy.org/doc/stable/reference/generated/numpy.fft.fftfreq.html
-
-Es el analogo a la funcion vfreq realizada en mi github: 
-    
-    https://github.com/AlejandroGoper/Fundamento_de_Procesamiento_Digital_de_Senales/blob/main/Tarea5/Codigo/Tarea5.ipynb
-
-Es importante notar el escalamiento de los ejes, dado que en esta nueva variable beta
-el espaciado entre cada frecuencia es del orden de 10**8 nanometros, por lo que debemos
-dividir el vector de frecuencias por un factor de 10**6 para que convierta los nanometros 
-a milimetros, ademas dado que en general tenemos 
-
-x(beta) = cos[2pi * (2OPL) * beta] donde beta es la variable independiente beta = 1/lambda
-
-en el espectro de fourier los picos de "frecuencias" estaran ubicados en +-2OPL 
-
-si queremos que cada pico de frecuencia diga el OPL directo, debemos agregar un factor de
-1/2 adicional al vector de frecuencias
-
-Todo esto podemos realizarlo multiplicando T_muestreo_beta*(2*10**6) 
-"""
-
-vfreq_np = fftfreq(len(fft_reflectancia),(T_muestreo_beta)*((2*10**6)))
-
-#reflectancia_db = 10*np.log10(obj.R())
-
-
-magnitud_fft = calcular_verdadera_amplitud(fft=fft_reflectancia)
-
-
-vfreq_positivas = recorte_frec_negativas_fft(fft=vfreq_np)
+x,y = encontrar_FFT(lambda_inicial=lambda_inicial, T_muestreo_lambda=T_muestreo_lambda, Reflectancia=reflectancia)
 
 # Graficando FFT
 
 plt.figure()
-plt.plot(vfreq_positivas,magnitud_fft)
+plt.plot(x,y)
 plt.title(label="Espectro de magnitud de Fourier")
 plt.xlabel(xlabel=r"OPL [$mm$] ")
 plt.ylabel(ylabel=r"$R$")
