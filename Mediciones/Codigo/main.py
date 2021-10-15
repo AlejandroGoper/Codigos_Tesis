@@ -22,7 +22,11 @@ ruta_directorio = "../1GAP-AIRE-8-10-2021"
 contenido = os.listdir(ruta_directorio)
 
 
-data_spectra = contenido
+# Ordenando el array 
+contenido_ordenado = sorted(contenido)
+
+
+data_spectra = contenido_ordenado
 
 for spectrum in data_spectra:
     path = ruta_directorio + "/" + spectrum
