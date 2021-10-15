@@ -13,6 +13,7 @@ adquiridas con el Interrogador.
 import numpy as np
 import matplotlib.pyplot as plt
 import os
+from FabryPerot.FFT_support import encontrar_FFT
 
 # Importando archivos 
 
@@ -20,15 +21,32 @@ ruta_directorio = "../1GAP-AIRE-8-10-2021"
 
 contenido = os.listdir(ruta_directorio)
 
+
 data_spectra = contenido
 
-for spectrum in data_spectra[0:1]:
+for spectrum in data_spectra:
     path = ruta_directorio + "/" + spectrum
     data = np.loadtxt(path,skiprows=58)
-
-plt.figure()
-plt.plot(data[:,0], data[:,1],linewidth = 0.5)
-plt.xlabel(xlabel=r"$\lambda [nm]$")
-plt.ylabel(ylabel=r"$Pot [dBm]$")
-#plt.xlim([1510,1520])
-plt.show()
+    
+    
+    # Separando datos
+    
+    lambda_ = data[:,0]
+    potencia_dBm = data[:,1]
+    
+    T_muestreo_lambda = lambda_[3] - lambda_[2] # Approx 0.005 nm
+        
+    
+    opl,amp = encontrar_FFT(lambda_inicial=lambda_[0], T_muestreo_lambda=T_muestreo_lambda, Reflectancia=potencia_dBm)
+    
+    
+    # Graficando
+    
+    plt.figure()
+    plt.plot(lambda_,potencia_dBm, linewidth=0.6)
+    #plt.plot(opl, amp)
+    plt.xlabel(xlabel=r"$OPL [mm]$")
+    plt.ylabel(ylabel=r"$Pot [dBm]$")
+    plt.title(label=spectrum)
+    #plt.xlim([0,5])
+    plt.show()
