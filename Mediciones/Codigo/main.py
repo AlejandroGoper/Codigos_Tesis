@@ -17,7 +17,11 @@ from FabryPerot.FFT_support import encontrar_FFT
 
 # Importando archivos 
 
-ruta_directorio = "../1GAP-AIRE-8-10-2021"
+fecha_medicion = "18-10-2021"
+
+carpeta = "1GAP-CAPILAR-AIRE-10um"
+
+ruta_directorio = "../" + fecha_medicion + "/" + carpeta
 
 contenido = os.listdir(ruta_directorio)
 
@@ -61,7 +65,7 @@ for spectrum in data_spectra[:]:
     ax = plt.subplot(1,2,1)
     ax.plot(lambda_,potencia_dBm, linewidth=0.6)
     ax.set_xlabel(xlabel=r"$\lambda [nm]$")
-    ax.set_ylabel(ylabel=r"$Pot [dBm]$")
+    ax.set_ylabel(ylabel=r"Pot $[dBm]$")
     ax.set_title(label="Dominio óptico")
     
     # Graficando la FFT
