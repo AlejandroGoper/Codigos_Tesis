@@ -12,13 +12,13 @@ Script para aplicar filtrado a la señal de la reflectancia
 import numpy as np
 import matplotlib.pyplot as plt
 from FabryPerot.FFT_support import calcular_verdadera_amplitud, recorte_frec_negativas_fft
+from scipy.signal import filtfilt
 
 
 # Parametros del filtro
-N = 81 # Orden del filtro
+N = 91 # Orden del filtro
 M = N-1 
-w_c = 80 # frecuencia de corte OPL [mm]
-
+w_c = 1*np.pi/(50)  # frecuencia de corte OPL [mm]
 # Dominio de la secuencia S[n]
 n = np.arange(0,N)
 # Calculando los coeficientes de la respuesta al impulso ideal de un filtro pasa bajos
@@ -63,10 +63,12 @@ plt.show()
 
 # Multiplicar la ventana w_n con la respuesta en el tiempo del filtro ideal para truncar
 s_n_hanning = w_n_hanning*h_n
+# Normalizando para que la suma sea 1
 s_n_hanning /= sum(s_n_hanning)
 
 
 s_n_gauss = w_n_gauss*h_n
+# Normalizando para que la suma sea 1
 s_n_gauss /= sum(s_n_gauss)
 
 
@@ -91,12 +93,10 @@ ax.set_xlabel(r"$n$")
 ax.set_ylabel(r"s[$n$]")
 plt.show()
 
-print(sum(s_n_gauss), sum(s_n_hanning))
-
 # Graficando la respuesta en el espacio de las frecuencias FFT
 
-fft_filtro_hamming = np.fft.fft(h_filtro_hamming)
-fft_filtro_gauss = np.fft.fft(h_filtor_gauss)
+fft_s_n_hanning = np.fft.fft(s_n_hanning)
+fft_s_n_gauss = np.fft.fft(s_n_gauss)
 
 # Graficando para ver que sucede
 fig, ax = plt.subplots()
@@ -104,11 +104,13 @@ fig.set_tight_layout(True)
 # Para que no se empalmen los titulos en los ejes
 fig.subplots_adjust(wspace=1.2)
 ax = plt.subplot(1,2,1)
-ax.plot(calcular_verdadera_amplitud(fft_filtro_hamming))
+ax.plot(recorte_frec_negativas_fft(np.fft.fftfreq(len(fft_s_n_hanning),0.01)),np.log10(calcular_verdadera_amplitud(fft_s_n_hanning)))
+ax.set_xlabel("w")
 ax.set_title("Espectro amp de Hamming")
 ax = plt.subplot(1,2,2)
-ax.plot(calcular_verdadera_amplitud(fft_filtro_gauss))
-ax.set_title(r"Espectro amp de gauss $\sigma = 0.1$")
+ax.plot(recorte_frec_negativas_fft(np.fft.fftfreq(len(fft_s_n_gauss),0.01)) ,np.log10(calcular_verdadera_amplitud(fft_s_n_gauss)))
+ax.set_xlabel("w")
+ax.set_title(r"Espectro amp de gauss $\sigma = 0.4$")
 
 plt.show()
 
@@ -116,7 +118,7 @@ plt.show()
 # Creacion de una señal cualquiera 
 
 t = np.arange(0,15,0.01)
-senal = np.cos(2*np.pi*0.5*t) + np.cos(2*np.pi*1.3*t) +1*np.cos(2*np.pi*5*t)
+senal = np.cos(2*np.pi*1*t) + np.cos(2*np.pi*2*t) + 1*np.cos(2*np.pi*10*t)
 
 vfreq = recorte_frec_negativas_fft(np.fft.fftfreq(len(senal),0.01))
 
@@ -125,11 +127,21 @@ fft_senal = calcular_verdadera_amplitud(np.fft.fft(senal))
 #from scipy.signal import filtfilt
 #senal_filtrada = filtfilt(b=h_filtor_gauss, a=1, x=senal)
 
-senal_filtrada = np.convolve(h_filtor_gauss/sum(h_filtor_gauss), senal, mode="same")
+senal_filtrada_hanning = np.convolve(s_n_hanning, senal, mode="same")
+#senal_filtrada_hanning = filtfilt(s_n_hanning,1,senal, method="gust")
 
-fft_senal_filtered = calcular_verdadera_amplitud(np.fft.fft(senal_filtrada))
+fft_senal_filtrada_hanning = calcular_verdadera_amplitud(np.fft.fft(senal_filtrada_hanning))
 
-vfreq_f = recorte_frec_negativas_fft(np.fft.fftfreq(len(senal_filtrada),0.01))
+vfreq_filt_hanning = recorte_frec_negativas_fft(np.fft.fftfreq(len(senal_filtrada_hanning),0.01))
+
+
+senal_filtrada_gauss = np.convolve(s_n_gauss, senal, mode="same")
+#senal_filtrada_gauss = filtfilt(s_n_gauss,1,senal,method="gust")
+
+fft_senal_filtrada_gauss = calcular_verdadera_amplitud(np.fft.fft(senal_filtrada_gauss))
+vfreq_filt_gauss = recorte_frec_negativas_fft(np.fft.fftfreq(len(senal_filtrada_gauss),0.01))
+
+
 
 # Graficando para ver que sucede
 fig, ax = plt.subplots()
@@ -138,68 +150,25 @@ fig.set_tight_layout(True)
 fig.subplots_adjust(wspace=1.2)
 ax = plt.subplot(3,2,1)
 ax.plot(t,senal)
-ax.set_title("Señal")
+ax.set_title("Señal original")
 ax = plt.subplot(3,2,2)
 ax.plot(vfreq,fft_senal)
 ax.set_title(r"Espectro de amplitud")
-ax.set_xlim([0,6])
+#ax.set_xlim([0,10])
 ax = plt.subplot(3,2,3)
-ax.plot(h_filtor_gauss)
-ax.set_title(r"Ventana de Gauss")
+ax.plot(t,senal_filtrada_hanning)
+ax.set_title(r"Señal filtrada Hanning")
 ax = plt.subplot(3,2,4)
-ax.plot(t,senal_filtrada)
-ax.set_title(r"Señal filtrada")
+ax.plot(vfreq_filt_hanning, fft_senal_filtrada_hanning)
+ax.set_title(r"Espectro de amplitud Hanning")
+#ax.set_xlim([0,10])
 ax = plt.subplot(3,2,5)
-ax.plot(fft_senal_filtered)
-ax.set_title(r"Espectro de amplitud SF")
-ax.set_xlim([0,80])
+ax.plot(t,senal_filtrada_gauss)
+ax.set_title(r"Señal filtrada Gauss")
+ax = plt.subplot(3,2,6)
+ax.plot(vfreq_filt_gauss,fft_senal_filtrada_gauss)
+ax.set_title(r"Espectro de amplitud Gauss")
+#ax.set_xlim([0,10])
 plt.show()
-
-
-
-
-
-"""
-import scipy.signal as sc
-
-# Creacion de una señal cualquiera 
-
-t = np.arange(0,15,0.01)
-senal = np.cos(2*np.pi*0.5*t) + np.cos(2*np.pi*1.3*t)
-
-fft_senal = calcular_verdadera_amplitud(np.fft.fft(senal)) 
-
-h = sc.windows.gaussian(81,4)
-
-h_n = h/sum(h)
-
-filtered = np.convolve(h_n,senal,mode="valid")
-
-fft_senal_filtered = calcular_verdadera_amplitud(filtered)
-
-# Graficando para ver que sucede
-fig, ax = plt.subplots()
-fig.set_tight_layout(True)
-# Para que no se empalmen los titulos en los ejes
-fig.subplots_adjust(wspace=1.2)
-ax = plt.subplot(3,2,1)
-ax.plot(t,senal)
-ax.set_title("Señal")
-ax = plt.subplot(3,2,2)
-ax.plot(fft_senal)
-ax.set_title(r"Espectro de amplitud")
-ax.set_xlim([0,50])
-ax = plt.subplot(3,2,3)
-ax.plot(h_n)
-ax.set_title(r"Ventana de hann")
-ax = plt.subplot(3,2,4)
-ax.plot(filtered)
-ax.set_title(r"Señal filtrada")
-ax = plt.subplot(3,2,5)
-ax.plot(fft_senal_filtered)
-ax.set_title(r"Espectro de amplitud SF")
-ax.set_xlim([0,50])
-plt.show()
-"""
 
 
