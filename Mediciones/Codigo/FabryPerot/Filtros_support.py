@@ -57,7 +57,7 @@ class Filtro():
         return w_n
     
     # Definicion de la ventana de hanning centrada en (N-1)/2 muestras
-    def ventana_hanning(self):
+    def ventana_de_hanning(self):
         M = self.orden -1
         n = arange(0,M+1)
         w_n = 0.5 - 0.5*cos(2*pi*n/M)
