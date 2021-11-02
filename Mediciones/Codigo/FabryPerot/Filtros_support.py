@@ -108,7 +108,9 @@ class Filtro():
     mismo que si usamos la funcion de scipy -- filtfilt).
     
     Segun la referencia [4] se debe normalizar la ventana respesto a la suma 
-    de todas sus contribuciones para preservar la amplitud de la senal original
+    de todas sus contribuciones para preservar la amplitud de la senal. Pero,
+    esto no es verdad, lo que se debe normalizar es la secuencia s_n no la 
+    ventana w_n para preservar la amplitud.
     ==========================================================================
     """
     def filtrar_por_ventana_de_gauss(self,sigma=0.25):
@@ -139,7 +141,9 @@ class Filtro():
     mismo que si usamos la funcion de scipy -- filtfilt).
     
     Segun la referencia [4] se debe normalizar la ventana respesto a la suma 
-    de todas sus contribuciones para preservar la amplitud de la senal original
+    de todas sus contribuciones para preservar la amplitud de la senal. Pero,
+    esto no es verdad, lo que se debe normalizar es la secuencia s_n no la 
+    ventana w_n para preservar la amplitud.
     ==========================================================================
     """
     
