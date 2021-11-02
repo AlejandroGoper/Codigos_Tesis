@@ -18,7 +18,7 @@ from scipy.signal import filtfilt
 # Parametros del filtro
 N = 91 # Orden del filtro
 M = N-1 
-w_c = 1*np.pi/(50)  # frecuencia de corte OPL [mm]
+w_c = 8*np.pi/(50)  # frecuencia de corte OPL [mm]
 # Dominio de la secuencia S[n]
 n = np.arange(0,N)
 # Calculando los coeficientes de la respuesta al impulso ideal de un filtro pasa bajos
@@ -172,3 +172,48 @@ ax.set_title(r"Espectro de amplitud Gauss")
 plt.show()
 
 
+# Probando clase 
+
+from FabryPerot.Filtros_support import Filtro
+
+filt = Filtro(_senal=senal , _T_muestreo=0.01, _frec_corte= 8, _orden=91)
+
+senal_filt_clase_gauss = filt.filtrar_por_ventana_de_gauss(0.4)
+
+senal_filt_clase_hanning = filt.filtrar_por_ventana_de_hanning()
+
+fft_senal_filtrada_gauss_clase = calcular_verdadera_amplitud(np.fft.fft(senal_filt_clase_gauss))
+vfreq_filt_gauss_clase = recorte_frec_negativas_fft(np.fft.fftfreq(len(senal_filt_clase_gauss),0.01))
+
+
+fft_senal_filtrada_hanning_clase = calcular_verdadera_amplitud(np.fft.fft(senal_filt_clase_hanning))
+vfreq_filt_hanning_clase = recorte_frec_negativas_fft(np.fft.fftfreq(len(senal_filt_clase_hanning),0.01))
+
+
+# Graficando para ver que sucede
+fig, ax = plt.subplots()
+fig.set_tight_layout(True)
+# Para que no se empalmen los titulos en los ejes
+fig.subplots_adjust(wspace=1.2)
+ax = plt.subplot(3,2,1)
+ax.plot(t,senal)
+ax.set_title("Señal original")
+ax = plt.subplot(3,2,2)
+ax.plot(vfreq,fft_senal)
+ax.set_title(r"Espectro de amplitud")
+#ax.set_xlim([0,10])
+ax = plt.subplot(3,2,3)
+ax.plot(t,senal_filt_clase_hanning)
+ax.set_title(r"Señal filtrada Hanning clase")
+ax = plt.subplot(3,2,4)
+ax.plot(vfreq_filt_hanning_clase, fft_senal_filtrada_hanning_clase)
+ax.set_title(r"Espectro de amplitud Hanning")
+#ax.set_xlim([0,10])
+ax = plt.subplot(3,2,5)
+ax.plot(t,senal_filt_clase_gauss)
+ax.set_title(r"Señal filtrada Gauss")
+ax = plt.subplot(3,2,6)
+ax.plot(vfreq_filt_gauss_clase,fft_senal_filtrada_gauss_clase)
+ax.set_title(r"Espectro de amplitud Gauss")
+#ax.set_xlim([0,10])
+plt.show()
