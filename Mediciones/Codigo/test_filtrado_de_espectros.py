@@ -56,13 +56,17 @@ fig.set_tight_layout(True)
 # Para que no se empalmen los titulos en los ejes
 fig.subplots_adjust(wspace=1.2)
 
+# Cambiando el tamano de la fuente en todos los ejes
+plt.rcParams.update({'font.size': 20})
+
 # Graficando el espectro 
 ax = plt.subplot(2,2,1)
-espectro_graph, = ax.plot(lambda_,potencia_dB, linewidth=0.6)
-ax.set_xlabel(xlabel=r"$\lambda [nm]$", fontsize=18)
-ax.set_ylabel(ylabel=r"$dB$", fontsize=18)
-ax.set_title(label="Dominio óptico", fontsize=18)
+espectro_graph, = ax.plot(lambda_,potencia_dB, linewidth=1.5, label= "Medición")
+ax.set_xlabel(xlabel=r"$\lambda [nm]$", fontsize=30)
+ax.set_ylabel(ylabel=r"$dB$", fontsize=30)
+ax.set_title(label="Dominio óptico", fontsize=30)
 ax.set_ylim([-40,-10])
+ax.legend(loc="best",fontsize=30)
 
 # Graficando la FFT
 T_muestreo_lambda = lambda_[3] - lambda_[2] # Approx 0.005 nm
@@ -71,10 +75,10 @@ T_muestreo_lambda = lambda_[3] - lambda_[2] # Approx 0.005 nm
 opl,amp = encontrar_FFT(lambda_inicial=lambda_[0], T_muestreo_lambda=T_muestreo_lambda, Reflectancia=potencia_dB)    
     
 ax = plt.subplot(2,2,2)
-fft_graph, = ax.plot(opl,amp, linewidth=0.9,color="purple")
-ax.set_xlabel(xlabel=r"$OPL [mm]$", fontsize=18)
-ax.set_ylabel(ylabel=r"$|dB|$", fontsize=18)
-ax.set_title(label="Dominio de Fourier", fontsize=18)
+fft_graph, = ax.plot(opl,amp, linewidth=1.5,color="purple")
+ax.set_xlabel(xlabel=r"$OPL [mm]$", fontsize=30)
+ax.set_ylabel(ylabel=r"$|dB|$", fontsize=30)
+ax.set_title(label="Dominio de Fourier", fontsize=30)
 ax.set_xlim([0,5])
 ax.set_ylim([0,2])
 
@@ -88,21 +92,21 @@ senal_filtrada = filtro.filtrar_por_ventana_de_gauss(0.2)
 
 # Graficando el espectro 
 ax = plt.subplot(2,2,3)
-espectro_graph, = ax.plot(lambda_,senal_filtrada, linewidth=0.6)
-ax.set_xlabel(xlabel=r"$\lambda [nm]$", fontsize=18)
-ax.set_ylabel(ylabel=r"$dB$", fontsize=18)
-ax.set_title(label="Dominio óptico", fontsize=18)
+espectro_graph, = ax.plot(lambda_,senal_filtrada, linewidth=1.5, label="Señal filtrada")
+ax.set_xlabel(xlabel=r"$\lambda [nm]$", fontsize=30)
+ax.set_ylabel(ylabel=r"$dB$", fontsize=30)
+ax.set_title(label="Dominio óptico", fontsize=30)
 ax.set_ylim([-40,-10])
+ax.legend(loc="lower left",fontsize=30)
 
 opl_, amp_ = encontrar_FFT(lambda_inicial, T_muestreo_lambda, senal_filtrada)
 
 ax = plt.subplot(2,2,4)
-fft_graph, = ax.plot(opl_,amp_, linewidth=0.9,color="teal")
-ax.set_xlabel(xlabel=r"$OPL [mm]$", fontsize=18)
-ax.set_ylabel(ylabel=r"$|dB|$", fontsize=18)
-ax.set_title(label="Dominio de Fourier", fontsize=18)
+fft_graph, = ax.plot(opl_,amp_, linewidth=1.5,color="teal")
+ax.set_xlabel(xlabel=r"$OPL [mm]$", fontsize=30)
+ax.set_ylabel(ylabel=r"$|dB|$", fontsize=30)
+ax.set_title(label="Dominio de Fourier", fontsize=30)
 ax.set_xlim([0,5])
 ax.set_ylim([0,2])
-
 plt.savefig("FIltro.png")
 plt.show()
