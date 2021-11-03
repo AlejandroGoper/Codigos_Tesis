@@ -83,7 +83,7 @@ lambda_inicial = lambda_[0]
 # Al realizar el cambio de variable beta = 1/lambda, tenemos que 
 T_muestreo_beta = T_muestreo_lambda / (lambda_inicial*(lambda_inicial+T_muestreo_lambda))
 
-filtro = Filtro(_senal=potencia_dB, _T_muestreo=T_muestreo_beta*(2*10**6), _frec_corte=1.5, _orden=991)
+filtro = Filtro(_senal=potencia_dB, _T_muestreo=T_muestreo_beta*(2*10**6), _frec_corte=1.5, _orden=801)
 senal_filtrada = filtro.filtrar_por_ventana_de_gauss(0.2)
 
 # Graficando el espectro 
@@ -97,7 +97,7 @@ ax.set_ylim([-40,-10])
 opl_, amp_ = encontrar_FFT(lambda_inicial, T_muestreo_lambda, senal_filtrada)
 
 ax = plt.subplot(2,2,4)
-fft_graph, = ax.plot(opl_,amp_, linewidth=0.9,color="black")
+fft_graph, = ax.plot(opl_,amp_, linewidth=0.9,color="teal")
 ax.set_xlabel(xlabel=r"$OPL [mm]$")
 ax.set_ylabel(ylabel=r"$|dB|$")
 ax.set_title(label="Dominio de Fourier")
