@@ -58,7 +58,7 @@ ax.set_ylabel(ylabel=r"Pot $[dBm]$")
 ax.set_title(label="Dominio óptico")
 ax.set_ylim([-40,-10])
 
- # Graficando la FFT
+# Graficando la FFT
  
  
 T_muestreo_lambda = lambda_[3] - lambda_[2] # Approx 0.005 nm
