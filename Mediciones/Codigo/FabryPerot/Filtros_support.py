@@ -20,6 +20,37 @@ Referencias:
 
 from numpy import pi, arange, sin, exp, cos, convolve
 
+
+"""
+    ==========================================================================
+    Este metodo construye una ventana gaussiana centrada en (N-1)/2 muestras
+    donde N es el orden del filtro (importante que N sea impar)
+    
+    Requiere:
+        - sigma: desviacion estandar de la distribucion gaussiana
+            segun la referencia [2] sigma debe ser menor a 0.5.
+    ==========================================================================
+"""
+def ventana_de_gauss(orden, sigma):
+    M = orden -1
+    n = arange(0,M+1)
+    w_n = exp(-0.5*((2*n-M)/(sigma*M))**2)
+    return w_n
+
+"""
+    ==========================================================================
+    Este metodo construye una ventana de hanning centrada en (N-1)/2 muestras
+    donde N es el orden del filtro (importante que N sea impar)
+    ==========================================================================
+"""
+def ventana_de_hanning(orden):
+    M = orden -1
+    n = arange(0,M+1)
+    w_n = 0.5 - 0.5*cos(2*pi*n/M)
+    return w_n
+
+
+
 """
 
 Definicion de la clase principal para la aplicacion de filtros
@@ -66,34 +97,6 @@ class Filtro():
         # Agregando la contribucion central del seno cardinal (dado que no esta definida aun)
         _h_n[int(M/2)] = w_c/pi
         return _h_n
-
-    """
-    ==========================================================================
-    Este metodo construye una ventana gaussiana centrada en (N-1)/2 muestras
-    donde N es el orden del filtro (importante que N sea impar)
-    
-    Requiere:
-        - sigma: desviacion estandar de la distribucion gaussiana
-            segun la referencia [2] sigma debe ser menor a 0.5.
-    ==========================================================================
-    """
-    def ventana_de_gauss(self, sigma):
-        M = self.orden -1
-        n = arange(0,M+1)
-        w_n = exp(-0.5*((2*n-M)/(sigma*M))**2)
-        return w_n
-    
-    """
-    ==========================================================================
-    Este metodo construye una ventana de hanning centrada en (N-1)/2 muestras
-    donde N es el orden del filtro (importante que N sea impar)
-    ==========================================================================
-    """
-    def ventana_de_hanning(self):
-        M = self.orden -1
-        n = arange(0,M+1)
-        w_n = 0.5 - 0.5*cos(2*pi*n/M)
-        return w_n
     
     
     """
@@ -116,10 +119,10 @@ class Filtro():
     def filtrar_por_ventana_de_gauss(self,sigma=0.25):
         
         senal = self.senal
-        
-        w_n = self.ventana_de_gauss(sigma)
+        orden = self.orden
+        w_n = ventana_de_gauss(orden,sigma)
         # filtro ideal
-        h_n = self.h_n(self.orden)
+        h_n = self.h_n(orden)
         # Definicion del filtro, truncamiento de h_n en la ventana de w_n
         s_n = w_n*h_n
         # Normalizando para que la suma sea 1, para que se respete la amplitud
@@ -149,10 +152,10 @@ class Filtro():
     
     def filtrar_por_ventana_de_hanning(self):
         senal = self.senal
-        
-        w_n = self.ventana_de_hanning()
+        orden = self.orden
+        w_n = ventana_de_hanning(orden)
         # filtro ideal
-        h_n = self.h_n(self.orden)
+        h_n = self.h_n(orden)
         # Definicion del filtro, truncamiento de h_n en la ventana de w_n
         s_n = w_n*h_n
         # Normalizando para que la suma sea 1, para que se respete la amplitud
