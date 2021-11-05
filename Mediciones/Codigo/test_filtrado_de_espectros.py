@@ -16,7 +16,7 @@ Documentacion para los colores de las graficas:
 """
 
 from FabryPerot.Filtros_support import Filtro, ventana_de_gauss
-from FabryPerot.FFT_support import encontrar_FFT, calcular_verdadera_amplitud, recorte_frec_negativas_fft
+from FabryPerot.FFT_support import encontrar_FFT
 import numpy as np
 import matplotlib.pyplot as plt
  
@@ -155,55 +155,6 @@ ax.set_title(label="Dominio de Fourier", fontsize=30)
 ax.set_xlim([0,5])
 #ax.set_ylim([0,2])
 plt.savefig("FIltro.png")
-
-#plt.show()
-
-"""
-# Construimos una ventana gaussiana de la misma longitud que la senal 
-
-obj = Filtro(_senal=None, _T_muestreo=1, _frec_corte=1, _orden=len(potencia_dB))
-w_n = obj.ventana_de_gauss(0.1)
-
-w_n /= sum(w_n)
-
-#w_n = 10*np.log10(w_n)
-
-plt.figure()
-plt.plot(w_n)
-plt.show()
-
-potencia_escala_lineal = (10**potencia_dB)/10
-senal_truncada = potencia_escala_lineal * w_n
-
-#senal_truncada = potencia_dB+w_n
-
-#senal_truncada = 10*np.log10(senal_truncada)
-
-plt.figure()
-plt.plot(lambda_, senal_truncada)
 plt.show()
 
 
-
-opl_truncada, amp_truncada = encontrar_FFT(lambda_inicial, T_muestreo_beta*(2*10**6), senal_truncada)
-
-plt.figure()
-plt.plot(opl_truncada, amp_truncada)
-plt.xlabel("OPL [mm]")
-plt.xlim([0,5])
-plt.ylabel("u.a")
-plt.show()
-
-
-filtro_2 = Filtro(_senal=senal_truncada, _T_muestreo=T_muestreo_beta*(2*10**6), _frec_corte=1.5, _orden=851)
-senal_filtrada_2 = filtro_2.filtrar_por_ventana_de_gauss(0.2)
-
-opl_filtrada_2, amp_filtrada_2 = encontrar_FFT(lambda_inicial, T_muestreo_lambda, senal_filtrada_2)
-
-plt.figure()
-plt.plot(opl_filtrada_2,amp_filtrada_2)
-plt.xlabel("OPL [mm]")
-plt.xlim([0,5])
-plt.show()
-
-"""
