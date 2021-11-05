@@ -96,6 +96,12 @@ opl,amp = encontrar_FFT(lambda_inicial=lambda_[0], T_muestreo_lambda=T_muestreo_
 for i in np.arange(3):
     amp[i] = 0
 
+
+# Dado que ya hay un solo maximo podemos encontrarlo facilmente
+max_value = amp.max()
+index_max_value = int(np.where(amp==max_value)[0])
+OPL_value = round(opl[index_max_value],3)
+
 # Graficando el espectro 
     
 ax = plt.subplot(1,2,1)
@@ -112,12 +118,20 @@ ax.legend(loc="best", fontsize=26)
 ax = plt.subplot(1,2,2)
 fft_graph, = ax.plot(opl,amp, linewidth=1.9,color="purple")
 ax.set_xlabel(xlabel=r"$OPL [mm]$", fontsize=26)
-ax.set_ylabel(ylabel=r"$|dB|$", fontsize=26)
+ax.set_ylabel(ylabel=r"$|a.u.|$", fontsize=26)
 ax.set_title(label="Dominio de Fourier", fontsize=30)
 ax.grid()
 ax.set_xlim([0,1.2])
-#ax.set_ylim([0,1])
 
+textstr = ''.join((r'$OPL=%.3f$' % (OPL_value, )))
+
+# these are matplotlib.patch.Patch properties
+props = dict(boxstyle='round', facecolor='teal', alpha=0.5)
+
+graph_text = ax.text(.75, 0.95, textstr, transform=ax.transAxes, fontsize=40,
+        verticalalignment='top', bbox=props)
+
+#ax.set_ylim([0,1])
 
 
 # Frames = numero de Espectros
@@ -141,7 +155,7 @@ def actualizar(i):
     
     # Aplicando Filtro pasabajos en una frecuencia de corte proporcional al incremento en las mediciones
     # medido en milimetros
-    f_c = i*5*(inc*0.001)
+    f_c = (20+i)*(inc*0.001)
     filtro = Filtro(_senal=potencia_dB, _T_muestreo=T_muestreo_beta*(2*10**6), _frec_corte=f_c, _orden=901)
     potencia_dB_filtrada = filtro.filtrar_por_ventana_de_gauss(0.1)
     #potencia_dB_filtrada = filtro.filtrar_por_ventana_de_hanning()
@@ -154,18 +168,26 @@ def actualizar(i):
     # Calculando la FFT
     opl,amp = encontrar_FFT(lambda_inicial=lambda_[0], T_muestreo_lambda=T_muestreo_lambda, Reflectancia=potencia_filtrada_limitada_lineal)    
     
+    
     # Eliminando la componente de DC de la amplitud de la fft    
     for i in np.arange(3):
         amp[i] = 0
-
+    
+        
+    # Dado que ya hay un solo maximo podemos encontrarlo facilmente
+    max_value = amp.max()
+    index_max_value = int(np.where(amp==max_value)[0])
+    # Redondeamos a 3 c.s.
+    OPL_value = round(opl[index_max_value],4)
     
     espectro_graph.set_ydata(potencia_filtrada_limitada_lineal)
     fft_graph.set_ydata(amp)
-    fig.suptitle(nombre_archivo)
+    # Creando cadena para caja de texto
+    textstr = f"OPL = {OPL_value}" 
+    graph_text.set_text(textstr)
+    fig.suptitle(nombre_archivo, fontsize=18)
     
-    
-    
-    return espectro_graph, fft_graph, ax
+    return espectro_graph, fft_graph,  graph_text, ax
 
 
 anim = FuncAnimation(fig = fig, func=actualizar, repeat= True, frames = np.arange(1,n+1), interval=1500)
