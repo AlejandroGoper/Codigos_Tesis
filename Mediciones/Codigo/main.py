@@ -19,7 +19,7 @@ import matplotlib.pyplot as plt
 from matplotlib.animation import writers, FuncAnimation
 import os
 from FabryPerot.FFT_support import encontrar_FFT
-from FabryPerot.Filtros_support import Filtro, ventana_de_gauss
+from FabryPerot.Filtros_support import Filtro, ventana_de_gauss, ventana_de_hanning
 
 # Creando figura
 fig,ax = plt.subplots(figsize=(40,20))
@@ -80,7 +80,9 @@ potencia_dB_filtrada = filtro.filtrar_por_ventana_de_gauss(0.1)
 
 potencia_filtrada_lineal = 10**(potencia_dB_filtrada/10)
 
+# Creando ventana
 w_n = ventana_de_gauss(orden=len(potencia_filtrada_lineal), sigma=0.3)
+#w_n = ventana_de_hanning(orden=len(potencia_filtrada_lineal))
 w_n /= sum(w_n)
 
 potencia_filtrada_limitada_lineal = w_n*potencia_filtrada_lineal
@@ -121,12 +123,9 @@ ax.set_xlim([0,1.2])
 # Frames = numero de Espectros
 def actualizar(i):
     
-    # fecha_medicion = "18-10-2021"
-    # carpeta = "1GAP-CAPILAR-AIRE-10um"
-    # ruta_directorio = "../" + fecha_medicion + "/" + carpeta
+    # Cargando datos de las mediciones
     
     numero_simulacion = str(i)
-    # numero_simulacion = format(i,"0>2d") 
     
     nombre_archivo = "Espectro (" + numero_simulacion + ").txt"
     
@@ -138,22 +137,17 @@ def actualizar(i):
     potencia_dBm = data[:,1]
     
     # Normalizando el espectro medido respecto a la referecia
-    # Debido a que estan en escala logaritmica, la division es una resta
-
     potencia_dB = potencia_dBm - potencia_dBm_ref
     
     # Aplicando Filtro pasabajos en una frecuencia de corte proporcional al incremento en las mediciones
     # medido en milimetros
     f_c = i*5*(inc*0.001)
-    
     filtro = Filtro(_senal=potencia_dB, _T_muestreo=T_muestreo_beta*(2*10**6), _frec_corte=f_c, _orden=901)
-
     potencia_dB_filtrada = filtro.filtrar_por_ventana_de_gauss(0.1)
+    #potencia_dB_filtrada = filtro.filtrar_por_ventana_de_hanning()
     # Transformando a escala lineal 
     potencia_filtrada_lineal = 10**(potencia_dB_filtrada/10)
-    # Definiendo ventana gaussiana
-    w_n = ventana_de_gauss(orden=len(potencia_filtrada_lineal), sigma=0.3)
-    w_n /= sum(w_n)
+    
     # Limitando el ancho de banda espectral
     potencia_filtrada_limitada_lineal = w_n*potencia_filtrada_lineal
     
