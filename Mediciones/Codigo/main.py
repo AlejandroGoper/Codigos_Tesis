@@ -36,6 +36,7 @@ fecha_medicion = "18-10-2021"
 carpeta = "1GAP-CAPILAR-AIRE-10um"
 # Incremento en la medicion
 inc = 10 # um
+
 ruta_directorio = "../" + fecha_medicion + "/" + carpeta
 # Calculando el numero de archivos en la carpeta
 n = len(os.listdir(ruta_directorio))
@@ -81,7 +82,7 @@ potencia_dB_filtrada = filtro.filtrar_por_ventana_de_gauss(0.1)
 potencia_filtrada_lineal = 10**(potencia_dB_filtrada/10)
 
 # Creando ventana
-w_n = ventana_de_gauss(orden=len(potencia_filtrada_lineal), sigma=0.3)
+w_n = ventana_de_gauss(orden=len(potencia_filtrada_lineal), sigma=0.45)
 #w_n = ventana_de_hanning(orden=len(potencia_filtrada_lineal))
 w_n /= sum(w_n)
 
@@ -97,10 +98,27 @@ for i in np.arange(3):
     amp[i] = 0
 
 
+# Resolucion en el dominio de la frecuencia
+
+dw = opl[2] - opl[1]
+
+lim_inf = dw * 0
+lim_sup = dw * 100
+
+
+# Limitando la busqeda a la ventana de interes deinida por [lim_inf, lim_sup]
+
+index_lim_inf = int(np.where(opl == lim_inf)[0])
+index_lim_sup = int(np.where(opl == lim_sup)[0])
+
+# Buscaremos el maximo solo en la vetana de interes.
+
+amp_temp = amp[index_lim_inf:index_lim_sup] 
+
 # Dado que ya hay un solo maximo podemos encontrarlo facilmente
-max_value = amp.max()
-index_max_value = int(np.where(amp==max_value)[0])
-OPL_value = round(opl[index_max_value],3)
+max_value = amp_temp.max()
+index_max_value = int(np.where(amp_temp == max_value)[0])
+OPL_value = round(opl[index_max_value+index_lim_inf],3)
 
 # Graficando el espectro 
     
@@ -121,14 +139,17 @@ ax.set_xlabel(xlabel=r"$OPL [mm]$", fontsize=26)
 ax.set_ylabel(ylabel=r"$|a.u.|$", fontsize=26)
 ax.set_title(label="Dominio de Fourier", fontsize=30)
 ax.grid()
-ax.set_xlim([0,1.2])
+ax.set_xlim([lim_inf,lim_sup])
+#ax.set_ylim([0,1e-7])
 
-textstr = ''.join((r'$OPL=%.3f$' % (OPL_value, )))
+# Creando cadena para caja de texto
+textstr = r"$OPL_{max}$ = " + str(OPL_value) 
+#textstr = ''.join((r'$OPL=%.3f$' % (OPL_value, )))
 
 # these are matplotlib.patch.Patch properties
 props = dict(boxstyle='round', facecolor='teal', alpha=0.5)
 
-graph_text = ax.text(.75, 0.95, textstr, transform=ax.transAxes, fontsize=40,
+graph_text = ax.text(.7, 0.95, textstr, transform=ax.transAxes, fontsize=40,
         verticalalignment='top', bbox=props)
 
 #ax.set_ylim([0,1])
@@ -173,17 +194,20 @@ def actualizar(i):
     for i in np.arange(3):
         amp[i] = 0
     
-        
-    # Dado que ya hay un solo maximo podemos encontrarlo facilmente
-    max_value = amp.max()
-    index_max_value = int(np.where(amp==max_value)[0])
+    # Buscaremos el maximo solo en la vetana de interes.
+
+    amp_temp = amp[index_lim_inf:index_lim_sup] 
+    
+    # Dado que ya hay un solo maximo en esa region podemos encontrarlo facilmente
+    max_value = amp_temp.max()
+    index_max_value = int(np.where(amp_temp==max_value)[0])
     # Redondeamos a 3 c.s.
-    OPL_value = round(opl[index_max_value],4)
+    OPL_value = round(opl[index_max_value+index_lim_inf],4)
     
     espectro_graph.set_ydata(potencia_filtrada_limitada_lineal)
     fft_graph.set_ydata(amp)
     # Creando cadena para caja de texto
-    textstr = f"OPL = {OPL_value}" 
+    textstr = r"$OPL_{max}$ = " + str(OPL_value) 
     graph_text.set_text(textstr)
     fig.suptitle(nombre_archivo, fontsize=18)
     
