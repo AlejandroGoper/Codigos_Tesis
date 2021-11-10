@@ -33,7 +33,7 @@ carpeta = "2GAP-VIDRIO-AIRE-100um"
 
 ruta_directorio = "../" + fecha_medicion + "/" + carpeta
 
-nombre_archivo = "Espectro (7).txt"
+nombre_archivo = "Espectro (5).txt"
 
 path = ruta_directorio + "/" + nombre_archivo
 
@@ -93,7 +93,7 @@ T_muestreo_lambda = 0.005
 opl,amp = encontrar_FFT(lambda_inicial=lambda_[0], T_muestreo_lambda=T_muestreo_lambda, Reflectancia=potencia_dB)    
 
 # Encontrando el vecino mas cercano a los limites de busqueda en amp
-nn.fit(opl.reshape((len(amp),1)))
+nn.fit(opl.reshape((len(opl),1)))
 
 index_lim_inf = nn.kneighbors([[lim_inf]], 1, return_distance=False)[0,0]
 index_lim_sup = nn.kneighbors([[lim_sup]],1 , return_distance=False)[0,0]
@@ -195,8 +195,30 @@ fft_graph, = ax.plot(opl_env,amp_env, linewidth=1.5,color="navy")
 ax.set_xlabel(xlabel=r"$OPL [mm]$", fontsize=30)
 ax.set_ylabel(ylabel=r"$|u.a|$", fontsize=30)
 ax.set_title(label="Dominio de Fourier", fontsize=30)
-ax.set_xlim([lim_inf,lim_sup])
+ax.set_xlim([0,2])
 #ax.set_ylim([0,2])
 plt.savefig("Filtro.png")
 plt.show()
+
+
+# Agregando funcionalidad de los 3 maximos
+
+# La funcion de find_peaks de Scipy ya tiene la capacidad de realizar esto
+from scipy.signal import find_peaks
+
+# Encontrando el vecino mas cercano a los limites de busqueda en amp
+nn.fit(opl_env.reshape((len(opl_env),1)))
+
+index_lim_inf = nn.kneighbors([[0]], 1, return_distance=False)[0,0]
+index_lim_sup = nn.kneighbors([[3]],1 , return_distance=False)[0,0]
+
+# Limitamos la busqueda
+amp_env_temp = amp_env[index_lim_inf:index_lim_sup]
+# Necesitamos definir un valor limite en altura en el grafico de la amplitud
+# Se buscaran los maximos que superen este valor
+picos, _ = find_peaks(amp_env_temp, height = 0.17e-5)
+picos += index_lim_inf 
+maximos = opl_env[picos]
+
+
 
