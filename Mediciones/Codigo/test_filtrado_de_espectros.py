@@ -86,8 +86,9 @@ ax.set_title(label="Dominio óptico", fontsize=30)
 ax.legend(loc="best",fontsize=30)
 
 # Graficando la FFT
-T_muestreo_lambda = lambda_[3] - lambda_[2] # Approx 0.005 nm
-        
+#T_muestreo_lambda = lambda_[3] - lambda_[2] # Approx 0.005 nm
+T_muestreo_lambda = 0.005
+       
 # Calculando la FFT
 opl,amp = encontrar_FFT(lambda_inicial=lambda_[0], T_muestreo_lambda=T_muestreo_lambda, Reflectancia=potencia_dB)    
 
@@ -157,13 +158,16 @@ senal_enventanada = senal_filtrada_esc_lineal * w_n
 
 # Mejorando la resolucion del espectro añadiendo 0 al inicio y al final del array
 
-zeros = list(np.zeros(10000))
+n_zeros = 10000
+zeros = list(np.zeros(n_zeros))
 
 senal_enventanada = zeros + list(senal_enventanada)
 
 senal_enventanada = np.array(senal_enventanada + zeros)
 
-#lambda_ = np.arange(510,2590,T_muestreo_lambda) 
+
+
+lambda_ = np.arange(1510-n_zeros*T_muestreo_lambda, 1590 + n_zeros*T_muestreo_lambda + 0.001 ,T_muestreo_lambda) 
 
 
 # Calculando la FFT de la señal enventanada
@@ -178,7 +182,7 @@ amp_env[:10] = 0,0,0,0,0,0,0,0,0,0
 
 # Graficando el espectro 
 ax = plt.subplot(3,2,5)
-espectro_graph, = ax.plot(senal_enventanada, linewidth=1.5, label="Señal-ventana")
+espectro_graph, = ax.plot(lambda_, senal_enventanada, linewidth=1.5, label="Señal-ventana")
 ax.set_xlabel(xlabel=r"$\lambda [nm]$", fontsize=30)
 ax.set_ylabel(ylabel=r"$[u.a.]$", fontsize=30)
 ax.set_title(label="Dominio óptico escala lineal", fontsize=30)
@@ -196,5 +200,5 @@ ax.set_xlim([lim_inf,lim_sup])
 plt.savefig("Filtro.png")
 plt.show()
 
-
+#print(len(np.arange(0,50,T_muestreo_lambda)))
 
