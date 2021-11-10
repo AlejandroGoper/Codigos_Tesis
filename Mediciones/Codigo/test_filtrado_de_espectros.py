@@ -160,6 +160,11 @@ senal_enventanada = senal_filtrada_esc_lineal * w_n
 opl_env, amp_env = encontrar_FFT(lambda_inicial, T_muestreo_lambda, senal_enventanada)
 
 
+# Eliminando la componenete de DC por medio de eliminar los 3 primeros indices
+
+amp_env[:3] = 0,0,0
+
+
 # Graficando el espectro 
 ax = plt.subplot(3,2,5)
 espectro_graph, = ax.plot(lambda_,senal_enventanada, linewidth=1.5, label="Señal-ventana")
@@ -179,4 +184,6 @@ ax.set_xlim([lim_inf,lim_sup])
 #ax.set_ylim([0,2])
 plt.savefig("Filtro.png")
 plt.show()
+
+
 
