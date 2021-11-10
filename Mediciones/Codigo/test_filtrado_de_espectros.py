@@ -15,28 +15,41 @@ Documentacion para los colores de las graficas:
 
 """
 
-from FabryPerot.Filtros_support import Filtro, ventana_de_gauss
+from FabryPerot.Filtros_support import Filtro, ventana_de_gauss, ventana_de_hanning
 from FabryPerot.FFT_support import encontrar_FFT
+from sklearn.neighbors import NearestNeighbors
 import numpy as np
 import matplotlib.pyplot as plt
- 
+
+
+muestras = [[0],[1],[2],[2.5],[10]]
+
+nn = NearestNeighbors(n_neighbors=1)
+nn.fit(muestras) 
+
+resultado = nn.kneighbors([[5]],1, return_distance=False)
+print(resultado[0,0])
+
+
+
+"""
 # Importando un espectro del fabry perot: 1GAP-CAPILAR-AIRE-10um - ESPECTRO (105)
 
 # Importando archivos 
 
-fecha_medicion = "18-10-2021"
+fecha_medicion = "09-11-2021"
 
-carpeta = "1GAP-CAPILAR-AIRE-10um"
+carpeta = "2GAP-VIDRIO-AIRE-100um"
 
 ruta_directorio = "../" + fecha_medicion + "/" + carpeta
 
-nombre_archivo = "Espectro (105).txt"
+nombre_archivo = "Espectro (5).txt"
 
 path = ruta_directorio + "/" + nombre_archivo
 
-data = np.loadtxt(path, skiprows=58)
+data = np.loadtxt(path, skiprows=0)
 
-path = "../Referencia/referencia.txt"
+path = ruta_directorio + "/referencia.txt"
 
 referencia = np.loadtxt(path)
 
@@ -70,7 +83,7 @@ espectro_graph, = ax.plot(lambda_,potencia_dB, linewidth=1.5, label= "Medición"
 ax.set_xlabel(xlabel=r"$\lambda [nm]$", fontsize=30)
 ax.set_ylabel(ylabel=r"$dB$", fontsize=30)
 ax.set_title(label="Dominio óptico", fontsize=30)
-ax.set_ylim([-40,-10])
+#ax.set_ylim([-40,-10])
 ax.legend(loc="best",fontsize=30)
 
 # Graficando la FFT
@@ -84,15 +97,15 @@ fft_graph, = ax.plot(opl,amp, linewidth=1.5,color="purple")
 ax.set_xlabel(xlabel=r"$OPL [mm]$", fontsize=30)
 ax.set_ylabel(ylabel=r"$|dB|$", fontsize=30)
 ax.set_title(label="Dominio de Fourier", fontsize=30)
-ax.set_xlim([0,5])
-ax.set_ylim([0,2])
+ax.set_xlim([0,6])
+#ax.set_ylim([0,1])
 
 lambda_inicial = lambda_[0]
 
 # Al realizar el cambio de variable beta = 1/lambda, tenemos que 
 T_muestreo_beta = T_muestreo_lambda / (lambda_inicial*(lambda_inicial+T_muestreo_lambda))
 
-filtro = Filtro(_senal=potencia_dB, _T_muestreo=T_muestreo_beta*(2*10**6), _frec_corte=1.5, _orden=801)
+filtro = Filtro(_senal=potencia_dB, _T_muestreo=T_muestreo_beta*(2*10**6), _frec_corte=3, _orden=901)
 senal_filtrada = filtro.filtrar_por_ventana_de_gauss(0.2)
 
 # Graficando el espectro 
@@ -101,7 +114,7 @@ espectro_graph, = ax.plot(lambda_,senal_filtrada, linewidth=1.5, label="Señal f
 ax.set_xlabel(xlabel=r"$\lambda [nm]$", fontsize=30)
 ax.set_ylabel(ylabel=r"$dB$", fontsize=30)
 ax.set_title(label="Dominio óptico", fontsize=30)
-ax.set_ylim([-40,-10])
+#ax.set_ylim([-40,-10])
 ax.legend(loc="lower left",fontsize=30)
 
 opl_, amp_ = encontrar_FFT(lambda_inicial, T_muestreo_lambda, senal_filtrada)
@@ -111,8 +124,8 @@ fft_graph, = ax.plot(opl_,amp_, linewidth=1.5,color="teal")
 ax.set_xlabel(xlabel=r"$OPL [mm]$", fontsize=30)
 ax.set_ylabel(ylabel=r"$|dB|$", fontsize=30)
 ax.set_title(label="Dominio de Fourier", fontsize=30)
-ax.set_xlim([0,5])
-ax.set_ylim([0,2])
+ax.set_xlim([0,6])
+#ax.set_ylim([0,1])
 #plt.savefig("FIltro.png")
 #plt.show()
 
@@ -124,7 +137,8 @@ senal_filtrada_esc_lineal = 10**(senal_filtrada/10)
 
 # Construyendo una ventana gaussiana de sigma = 0.1
 
-w_n = ventana_de_gauss(orden=len(senal_filtrada_esc_lineal), sigma=0.06)
+#w_n = ventana_de_gauss(orden=len(senal_filtrada_esc_lineal), sigma=1.4)
+w_n = ventana_de_hanning(orden=len(senal_filtrada_esc_lineal))
 
 w_n /= sum(w_n)
 
@@ -152,9 +166,9 @@ fft_graph, = ax.plot(opl_env,amp_env, linewidth=1.5,color="navy")
 ax.set_xlabel(xlabel=r"$OPL [mm]$", fontsize=30)
 ax.set_ylabel(ylabel=r"$|u.a|$", fontsize=30)
 ax.set_title(label="Dominio de Fourier", fontsize=30)
-ax.set_xlim([0,5])
+ax.set_xlim([0,6])
 #ax.set_ylim([0,2])
-plt.savefig("FIltro.png")
+plt.savefig("Filtro.png")
 plt.show()
 
-
+"""
