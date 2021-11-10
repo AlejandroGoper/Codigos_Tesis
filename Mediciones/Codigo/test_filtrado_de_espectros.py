@@ -33,7 +33,7 @@ carpeta = "2GAP-VIDRIO-AIRE-100um"
 
 ruta_directorio = "../" + fecha_medicion + "/" + carpeta
 
-nombre_archivo = "Espectro (5).txt"
+nombre_archivo = "Espectro (7).txt"
 
 path = ruta_directorio + "/" + nombre_archivo
 
@@ -155,6 +155,17 @@ w_n /= sum(w_n)
 
 senal_enventanada = senal_filtrada_esc_lineal * w_n
 
+# Mejorando la resolucion del espectro añadiendo 0 al inicio y al final del array
+
+zeros = list(np.zeros(10000))
+
+senal_enventanada = zeros + list(senal_enventanada)
+
+senal_enventanada = np.array(senal_enventanada + zeros)
+
+#lambda_ = np.arange(510,2590,T_muestreo_lambda) 
+
+
 # Calculando la FFT de la señal enventanada
 
 opl_env, amp_env = encontrar_FFT(lambda_inicial, T_muestreo_lambda, senal_enventanada)
@@ -162,12 +173,12 @@ opl_env, amp_env = encontrar_FFT(lambda_inicial, T_muestreo_lambda, senal_envent
 
 # Eliminando la componenete de DC por medio de eliminar los 3 primeros indices
 
-amp_env[:3] = 0,0,0
+amp_env[:10] = 0,0,0,0,0,0,0,0,0,0
 
 
 # Graficando el espectro 
 ax = plt.subplot(3,2,5)
-espectro_graph, = ax.plot(lambda_,senal_enventanada, linewidth=1.5, label="Señal-ventana")
+espectro_graph, = ax.plot(senal_enventanada, linewidth=1.5, label="Señal-ventana")
 ax.set_xlabel(xlabel=r"$\lambda [nm]$", fontsize=30)
 ax.set_ylabel(ylabel=r"$[u.a.]$", fontsize=30)
 ax.set_title(label="Dominio óptico escala lineal", fontsize=30)
