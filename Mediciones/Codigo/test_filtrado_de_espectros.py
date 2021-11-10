@@ -200,5 +200,3 @@ ax.set_xlim([lim_inf,lim_sup])
 plt.savefig("Filtro.png")
 plt.show()
 
-#print(len(np.arange(0,50,T_muestreo_lambda)))
-
