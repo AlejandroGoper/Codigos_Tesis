@@ -22,18 +22,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-muestras = [[0],[1],[2],[2.5],[10]]
 
-nn = NearestNeighbors(n_neighbors=1)
-nn.fit(muestras) 
-
-resultado = nn.kneighbors([[5]],1, return_distance=False)
-print(resultado[0,0])
-
-
-
-"""
-# Importando un espectro del fabry perot: 1GAP-CAPILAR-AIRE-10um - ESPECTRO (105)
+# Importando un espectro del fabry perot: 2GAP-VIDRIO-AIRE-100um - ESPECTRO (5)
 
 # Importando archivos 
 
@@ -66,6 +56,15 @@ potencia_dBm = data[:,1]
 
 potencia_dB = potencia_dBm - potencia_dBm_ref
 
+# Definiendo limite de busqueda en el espectro de Fourier
+lim_inf = 0
+lim_sup = 3
+
+# Implementaremos un KNN para encontrar el vecino mas cercano al limite de
+# busqueda que hemos obtenido en el array del opl en el dominio de fourier
+nn = NearestNeighbors(n_neighbors=1)
+
+
 # Creando figura
 fig,ax = plt.subplots(figsize=(40,20))
 fig.set_tight_layout(True)
@@ -91,13 +90,23 @@ T_muestreo_lambda = lambda_[3] - lambda_[2] # Approx 0.005 nm
         
 # Calculando la FFT
 opl,amp = encontrar_FFT(lambda_inicial=lambda_[0], T_muestreo_lambda=T_muestreo_lambda, Reflectancia=potencia_dB)    
-    
+
+# Encontrando el vecino mas cercano a los limites de busqueda en amp
+nn.fit(opl.reshape((len(amp),1)))
+
+index_lim_inf = nn.kneighbors([[lim_inf]], 1, return_distance=False)[0,0]
+index_lim_sup = nn.kneighbors([[lim_sup]],1 , return_distance=False)[0,0]
+
+lim_inf = opl[index_lim_inf]
+lim_sup = opl[index_lim_sup]
+
+
 ax = plt.subplot(3,2,2)
 fft_graph, = ax.plot(opl,amp, linewidth=1.5,color="purple")
 ax.set_xlabel(xlabel=r"$OPL [mm]$", fontsize=30)
 ax.set_ylabel(ylabel=r"$|dB|$", fontsize=30)
 ax.set_title(label="Dominio de Fourier", fontsize=30)
-ax.set_xlim([0,6])
+ax.set_xlim([lim_inf,lim_sup])
 #ax.set_ylim([0,1])
 
 lambda_inicial = lambda_[0]
@@ -124,7 +133,7 @@ fft_graph, = ax.plot(opl_,amp_, linewidth=1.5,color="teal")
 ax.set_xlabel(xlabel=r"$OPL [mm]$", fontsize=30)
 ax.set_ylabel(ylabel=r"$|dB|$", fontsize=30)
 ax.set_title(label="Dominio de Fourier", fontsize=30)
-ax.set_xlim([0,6])
+ax.set_xlim([lim_inf,lim_sup])
 #ax.set_ylim([0,1])
 #plt.savefig("FIltro.png")
 #plt.show()
@@ -166,9 +175,8 @@ fft_graph, = ax.plot(opl_env,amp_env, linewidth=1.5,color="navy")
 ax.set_xlabel(xlabel=r"$OPL [mm]$", fontsize=30)
 ax.set_ylabel(ylabel=r"$|u.a|$", fontsize=30)
 ax.set_title(label="Dominio de Fourier", fontsize=30)
-ax.set_xlim([0,6])
+ax.set_xlim([lim_inf,lim_sup])
 #ax.set_ylim([0,2])
 plt.savefig("Filtro.png")
 plt.show()
 
-"""
