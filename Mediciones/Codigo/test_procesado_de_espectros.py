@@ -224,7 +224,9 @@ Aplicando FFT a la señal mejorada
 
 # Calculando la FFT de la señal enventanada
 
-opl_env, amp_env = encontrar_FFT(lambda_inicial, T_muestreo_lambda, senal_enventanada)
+opl_env, amp_env = encontrar_FFT(lambda_inicial,
+                                 T_muestreo_lambda, 
+                                 senal_enventanada)
 
 
 """
@@ -276,7 +278,7 @@ maximos = opl_env[picos]
 # Imprimiendo resultados
 print("====================================================================")
 for maximo in maximos: 
-    print("Maximo localizado en: {%.3f} mm" % maximo)
+    print("Maximo localizado en: %.3f mm" % maximo)
 
 print("====================================================================")
 

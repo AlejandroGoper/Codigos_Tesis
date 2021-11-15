@@ -19,7 +19,7 @@ Referencias:
 """
 
 from numpy import pi, arange, sin, exp, cos, convolve
-
+from scipy.signal import filtfilt
 
 """
     ==========================================================================
@@ -163,5 +163,6 @@ class Filtro():
         
         # senal filtrada
         senal_filtrada = convolve(s_n,senal, mode="same")
+        # senal_filtrada = filtfilt(b=s_n,a=1,x=senal)
         return senal_filtrada
     
