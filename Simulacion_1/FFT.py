@@ -36,10 +36,21 @@ lambda_ = np.arange(lambda_inicial,lambda_final, T_muestreo_lambda) #nanometros
 
 
 # Construyendo señal a analizar en el dominio de fourier
-obj = FabryPerot_2GAP(lambda_inicial=lambda_inicial,lambda_final= lambda_final,L_medio_1 = 0.4, L_medio_2=0.8, eta_medio_1 = 1.0, eta_medio_2 = 1.332, eta_medio_3=1.48)
+obj = FabryPerot_2GAP(lambda_inicial=lambda_inicial,
+                      lambda_final= lambda_final,
+                      L_medio_1 = 0.4, 
+                      L_medio_2=0.8, 
+                      eta_medio_1 = 1.0, 
+                      eta_medio_2 = 1.332, 
+                      eta_medio_3=1.48)
+
 reflectancia = obj.R()
 
-x,y = encontrar_FFT(lambda_inicial=lambda_inicial, T_muestreo_lambda=T_muestreo_lambda, Reflectancia=reflectancia)
+x,y = encontrar_FFT(lambda_inicial=lambda_inicial, 
+                    T_muestreo_lambda=T_muestreo_lambda, 
+                    Reflectancia=reflectancia)
+
+
 
 # Graficando FFT
 
@@ -47,7 +58,7 @@ plt.figure()
 plt.plot(x,y)
 plt.title(label="Espectro de magnitud de Fourier")
 plt.xlabel(xlabel=r"OPL [$mm$] ")
-plt.ylabel(ylabel=r"$R$")
+plt.ylabel(ylabel=r"$|R|$")
 #plt.plot(lambda_,10*np.log10(reflectancia))
 #plt.plot(lambda_,reflectancia)
 plt.xlim([-0.1,4])
