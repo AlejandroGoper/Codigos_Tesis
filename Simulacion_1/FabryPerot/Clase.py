@@ -23,7 +23,7 @@ class FabryPerot_2GAP:
                  eta_medio_3, eta_fibra=1.48, alpha_medio_1=0, alpha_medio_2=0, 
                  A_interfaz_1=0, A_interfaz_2=0):
         # Array de longitudes de onda de la simulacion
-        self.lambda_ = arange(lambda_inicial, lambda_final, 0.01)
+        self.lambda_ = arange(lambda_inicial, lambda_final, 0.005)
         
         # Indices de refraccion de los medios
         self.eta_1 = eta_fibra 
