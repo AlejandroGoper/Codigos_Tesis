@@ -94,7 +94,7 @@ opl,amp = encontrar_FFT(lambda_inicial=lambda_[0],
 
 """
 ==============================================================================
-Establciendo rango de busqueda en el espacio de Fourier  
+Estableciendo rango de busqueda en el espacio de Fourier  
 ==============================================================================
 """
 
@@ -153,7 +153,7 @@ filtro = Filtro(_senal=potencia_dB, # senal a filtrar
                 _orden=901) # Orden del Filtro
 
 # Filtrando por el metodo de las ventanas
-senal_filtrada = filtro.filtrar_por_ventana_de_gauss(0.2)
+senal_filtrada = filtro.filtrar_por_ventana_de_gauss(sigma=0.2)
 
 """
 ==============================================================================
