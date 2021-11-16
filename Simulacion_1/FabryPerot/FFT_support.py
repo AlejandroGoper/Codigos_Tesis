@@ -53,9 +53,10 @@ Devuelve:
     magnitud_fft: array con la magnitud de la fft 
 """
 
-def encontrar_FFT(lambda_inicial, T_muestreo_lambda, Reflectancia):
+def encontrar_FFT(lambda_, Reflectancia):
     # Al realizar el cambio de variable beta = 1/lambda, tenemos que 
-    T_muestreo_beta = T_muestreo_lambda / (lambda_inicial*(lambda_inicial+T_muestreo_lambda))
+    #T_muestreo_beta = T_muestreo_lambda / (lambda_inicial*(lambda_inicial+T_muestreo_lambda))
+    T_muestreo_beta = (1/lambda_[0] - 1/lambda_[int(len(lambda_))-1])/len(lambda_)
     # Encontramos la FFT de la reflectancia
     fft_reflectancia = fft(Reflectancia)
     """
