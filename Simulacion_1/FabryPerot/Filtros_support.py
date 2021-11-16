@@ -49,8 +49,18 @@ def ventana_de_hanning(orden):
     w_n = 0.5 - 0.5*cos(2*pi*n/M)
     return w_n
 
-
-
+def ventana_flattop(orden):
+    M = orden - 1 
+    n = arange(0,M+1)
+    a_0 = 0.21557895
+    a_1 = 0.41663158
+    a_2 = 0.277263158
+    a_3 = 0.083578947
+    a_4 = 0.006947368
+    w_n = - a_1*cos(2*pi*n/M) + a_2*cos(4*pi*n/M) + ( 
+          - a_3*cos(6*pi*n/M) + a_4*cos(8*pi*n/M) )
+    w_n += a_0
+    return w_n
 """
 
 Definicion de la clase principal para la aplicacion de filtros
