@@ -40,6 +40,7 @@ lambda_ = np.arange(lambda_inicial,lambda_final, T_muestreo_lambda) #nanometros
 # Construyendo señal a analizar en el dominio de fourier
 obj = FabryPerot_2GAP(lambda_inicial=lambda_inicial,
                       lambda_final= lambda_final,
+                      T_muestreo_lambda= 0.005,
                       L_medio_1 = 0.4, 
                       L_medio_2=0.8, 
                       eta_medio_1 = 1.0, 
@@ -165,9 +166,6 @@ Aplicando tecnica WINDOWING:
 w_n = ventana_de_gauss(orden=len(senal_filtrada_esc_lineal), sigma=0.1)
 #w_n = ventana_de_hanning(orden=len(senal_filtrada_esc_lineal))
 #w_n = ventana_flattop(orden=len(senal_filtrada_esc_lineal))
-# Normalizando con respecto a la suma de todos los datos para asegurar
-# que se preserva la amplitud
-# w_n /= sum(w_n)
 
 # Enventanado de la senal en escala lineal
 senal_enventanada = senal_filtrada_esc_lineal * w_n
