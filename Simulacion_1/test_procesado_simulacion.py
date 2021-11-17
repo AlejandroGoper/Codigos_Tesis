@@ -15,7 +15,7 @@ la señal para así evaluar la precisión de script
 import numpy as np
 import matplotlib.pyplot as plt
 from FabryPerot.Clase import FabryPerot_2GAP
-from FabryPerot.FFT_support import encontrar_FFT
+from FabryPerot.FFT_support import encontrar_FFT_dominio_en_OPL
 from FabryPerot.Filtros_support import Filtro, ventana_de_hanning, ventana_de_gauss, ventana_flattop
 from scipy.signal import find_peaks
 from sklearn.neighbors import NearestNeighbors
@@ -47,6 +47,7 @@ obj = FabryPerot_2GAP(lambda_inicial=lambda_inicial,
                       eta_medio_2 = 1.332, 
                       eta_medio_3=1.48)
 
+# Cambiando a escala dB
 potencia_dB = 10*np.log10(obj.R())
 
 """
@@ -68,7 +69,9 @@ T_muestreo_lambda = 0.005 # nm
 Calculando la FFT
 ==============================================================================
 """
-opl,amp = encontrar_FFT(lambda_=lambda_, Reflectancia=potencia_dB)    
+opl,amp = encontrar_FFT_dominio_en_OPL(lambda_inicial = lambda_inicial, 
+                                       lambda_final = lambda_final, 
+                                       senal=potencia_dB)
 
 
 
@@ -123,8 +126,7 @@ Aplicacion de filtro FIR pasa-bajos
 lambda_inicial = lambda_[0]
 
 # Al realizar el cambio de variable beta = 1/lambda, tenemos que 
-T_muestreo_beta = T_muestreo_lambda / (lambda_inicial*(lambda_inicial +
-                                                       T_muestreo_lambda))
+T_muestreo_beta = (1/lambda_inicial - 1/lambda_final)/len(potencia_dB)
 
 # Creando objeto de la clase Filtro
 filtro = Filtro(_senal=potencia_dB, # senal a filtrar
@@ -141,7 +143,10 @@ Aplicando FFT a la señal filtrada
 ==============================================================================
 """
 # opl_, amp_ = encontrar_FFT(lambda_inicial, T_muestreo_lambda, senal_filtrada)
-opl_,amp_ = encontrar_FFT(lambda_=lambda_, Reflectancia=senal_filtrada)    
+#opl_,amp_ = encontrar_FFT(lambda_=lambda_, Reflectancia=senal_filtrada)    
+opl_,amp_ = encontrar_FFT_dominio_en_OPL(lambda_inicial=lambda_inicial, 
+                                         lambda_final=lambda_final, 
+                                         senal=senal_filtrada)
 
 """
 ==============================================================================
@@ -205,8 +210,13 @@ Aplicando FFT a la señal mejorada
 #                                 T_muestreo_lambda, 
 #                                 senal_enventanada)
 
-opl_env, amp_env = encontrar_FFT(lambda_=lambda_, Reflectancia=senal_enventanada)    
-
+# Primer indice del array
+lambda_inicial = lambda_mejorada[0]
+# Ultimo indice del array
+lambda_final = lambda_mejorada[-1]
+opl_env, amp_env = encontrar_FFT_dominio_en_OPL(lambda_inicial= lambda_inicial,
+                                                lambda_final= lambda_final, 
+                                                senal=senal_enventanada)
 
 """
 ==============================================================================
