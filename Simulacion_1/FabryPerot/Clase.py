@@ -19,11 +19,13 @@ class FabryPerot_2GAP:
         Definicion de Atributos de clase
     
     """
-    def __init__(self, lambda_inicial, lambda_final, L_medio_1, L_medio_2, eta_medio_1, eta_medio_2, 
-                 eta_medio_3, eta_fibra=1.48, alpha_medio_1=0, alpha_medio_2=0, 
+    def __init__(self, lambda_inicial, lambda_final,T_muestreo_lambda, 
+                 L_medio_1, L_medio_2, eta_medio_1, eta_medio_2, eta_medio_3, 
+                 eta_fibra=1.48, alpha_medio_1=0, alpha_medio_2=0, 
                  A_interfaz_1=0, A_interfaz_2=0):
+        
         # Array de longitudes de onda de la simulacion
-        self.lambda_ = arange(lambda_inicial, lambda_final, 0.005)
+        self.lambda_ = arange(lambda_inicial, lambda_final, T_muestreo_lambda)
         
         # Indices de refraccion de los medios
         self.eta_1 = eta_fibra 
