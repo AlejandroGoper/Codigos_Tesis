@@ -181,7 +181,7 @@ Mejoramiento de la resolucion en Fourier post-windowing
 # Mejorando la resolucion del espectro añadiendo 0 a los extremos del array
 
 # Numero de ceros a agregar en cada extremo
-n_zeros = 0
+n_zeros = 100
 zeros = list(np.zeros(n_zeros))
 
 # Agregamos los ceros a cada extremo de la señal
@@ -245,7 +245,7 @@ amp_env_temp = amp_env[index_lim_inf:index_lim_sup]
 
 # Necesitamos definir un valor limite en altura en el grafico de la amplitud
 # se buscaran los maximos que superen este valor
-lim_amp = 0.00015
+lim_amp = 0.001
 
 # Buscando maximos en la region limitada
 picos, _ = find_peaks(amp_env_temp, height = lim_amp)
