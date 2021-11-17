@@ -24,10 +24,17 @@ Interferometro de Fabry-Perot en serie de 2 cavidades (GAP).
 """
 
 # Definicion del dominio en longitudes de onda
-lambda_ = np.arange(1500,1600,0.01) #nanometros
+lambda_ = np.arange(1500,1600,0.005) #nanometros
 
 
-obj = FabryPerot_2GAP(lambda_inicial=1500,lambda_final= 1600,L_medio_1 = 4, L_medio_2=8, eta_medio_1 = 1.0, eta_medio_2 = 1.332, eta_medio_3=1.48)
+obj = FabryPerot_2GAP(lambda_inicial=1500,
+                      lambda_final= 1600,
+                      T_muestreo_lambda=0.005,
+                      L_medio_1 = 4, 
+                      L_medio_2=8, 
+                      eta_medio_1 = 1.0, 
+                      eta_medio_2 = 1.332, 
+                      eta_medio_3=1.48)
 reflectancia = obj.R()
 
 
