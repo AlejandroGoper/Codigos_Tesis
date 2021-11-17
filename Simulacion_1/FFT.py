@@ -13,7 +13,7 @@ Codigo para la transformada de Fourier de la señal obtenida en main
 import numpy as np
 import matplotlib.pyplot as plt
 from FabryPerot.Clase import FabryPerot_2GAP
-from FabryPerot.FFT_support import encontrar_FFT
+from FabryPerot.FFT_support import encontrar_FFT_dominio_en_OPL
 
 """
 ==============================================================================
@@ -29,7 +29,7 @@ lambda_inicial = 1500 #nm
 
 lambda_final = 1600 #nm
 
-T_muestreo_lambda = 0.01 #nm
+T_muestreo_lambda = 0.005 #nm
 
 # Definicion del dominio en longitudes de onda
 lambda_ = np.arange(lambda_inicial,lambda_final, T_muestreo_lambda) #nanometros
@@ -38,6 +38,7 @@ lambda_ = np.arange(lambda_inicial,lambda_final, T_muestreo_lambda) #nanometros
 # Construyendo señal a analizar en el dominio de fourier
 obj = FabryPerot_2GAP(lambda_inicial=lambda_inicial,
                       lambda_final= lambda_final,
+                      T_muestreo_lambda=T_muestreo_lambda,
                       L_medio_1 = 0.4, 
                       L_medio_2=0.8, 
                       eta_medio_1 = 1.0, 
@@ -46,10 +47,10 @@ obj = FabryPerot_2GAP(lambda_inicial=lambda_inicial,
 
 reflectancia = obj.R()
 
-x,y = encontrar_FFT(lambda_inicial=lambda_inicial, 
-                    T_muestreo_lambda=T_muestreo_lambda, 
-                    Reflectancia=reflectancia)
-
+# Calculando FFT
+x,y = encontrar_FFT_dominio_en_OPL(lambda_inicial=lambda_inicial, 
+                                   lambda_final=lambda_final, 
+                                   senal=reflectancia)
 
 
 # Graficando FFT
