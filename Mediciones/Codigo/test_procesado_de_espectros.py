@@ -15,7 +15,7 @@ Documentacion para los colores de las graficas:
 
 """
 
-from FabryPerot.Filtros_support import Filtro, ventana_de_gauss, ventana_de_hanning, ventana_flattop
+from FabryPerot.Filtros_support import Filtro, ventana_de_gauss, ventana_de_hanning, ventana_flattop, ventana_kaiser_bessel
 from FabryPerot.FFT_support import encontrar_FFT_dominio_en_OPL
 from scipy.signal import find_peaks
 from sklearn.neighbors import NearestNeighbors
@@ -32,13 +32,13 @@ Importando Datos
 
 # Importando archivos 
 
-fecha_medicion = "09-11-2021"
+fecha_medicion = "9-11-2021"
 
-carpeta = "2GAP-VIDRIO-AIRE-100um"
+carpeta = "2GAP-VIDRIO-AIRE-0.1um"
 
 ruta_directorio = "../" + fecha_medicion + "/" + carpeta
 
-nombre_archivo = "Espectro (5).txt"
+nombre_archivo = "Espectro (1).txt"
 
 path = ruta_directorio + "/" + nombre_archivo
 
@@ -205,12 +205,13 @@ Aplicando tecnica WINDOWING:
 
 # Construyendo una ventana w_n del mismo tamaño que el array de la senal
 
-# w_n = ventana_de_gauss(orden=len(senal_filtrada_esc_lineal), sigma=1.4)
-w_n = ventana_de_hanning(orden=len(senal_filtrada_esc_lineal))
+# w_n = ventana_de_gauss(orden=len(senal_filtrada_esc_lineal), sigma=0.1)
+# w_n = ventana_de_hanning(orden=len(senal_filtrada_esc_lineal))
 # w_n = ventana_flattop(orden=len(senal_filtrada_esc_lineal))
 
+w_n = ventana_kaiser_bessel(orden=len(senal_filtrada_esc_lineal), beta=14)
 # Enventanado de la senal en escala lineal
-senal_enventanada = senal_filtrada_esc_lineal* w_n
+senal_enventanada = senal_filtrada_esc_lineal * w_n
 
 
 
