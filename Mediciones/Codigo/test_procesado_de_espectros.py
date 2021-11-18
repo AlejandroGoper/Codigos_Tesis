@@ -15,8 +15,8 @@ Documentacion para los colores de las graficas:
 
 """
 
-from FabryPerot.Filtros_support import Filtro, ventana_de_gauss, ventana_de_hanning
-from FabryPerot.FFT_support import encontrar_FFT
+from FabryPerot.Filtros_support import Filtro, ventana_de_gauss, ventana_de_hanning, ventana_flattop
+from FabryPerot.FFT_support import encontrar_FFT_dominio_en_OPL
 from scipy.signal import find_peaks
 from sklearn.neighbors import NearestNeighbors
 import numpy as np
@@ -77,8 +77,13 @@ lim_inf = 0 # mm
 lim_sup = 3 # mm
 
 
-#Periodo de muestreo = lambda_[3] - lambda_[2] # Approx 0.005 nanometros
-T_muestreo_lambda = 0.005 # nm
+#Periodo de muestreo = (lambda_[-1] - lambda_[0])/len(lambda_) Approx 0.005 nm
+
+lambda_inicial = lambda_[0] # Valor inicial del arreglo
+lambda_final = lambda_[-1] # Valor final del arreglo
+n = len(lambda_) # Cantidad de datos en el arreglo
+
+T_muestreo_lambda = (lambda_final-lambda_inicial)/n
        
 
 """
@@ -86,10 +91,10 @@ T_muestreo_lambda = 0.005 # nm
 Calculando la FFT
 ==============================================================================
 """
-opl,amp = encontrar_FFT(lambda_inicial=lambda_[0], 
-                        T_muestreo_lambda=T_muestreo_lambda, 
-                        Reflectancia=potencia_dB)    
 
+opl,amp = encontrar_FFT_dominio_en_OPL(lambda_inicial=lambda_inicial, 
+                                       lambda_final=lambda_final, 
+                                       senal=potencia_dB)
 
 
 """
@@ -101,33 +106,41 @@ Estableciendo rango de busqueda en el espacio de Fourier
 # Implementaremos un KNN de Machine Learning para encontrar el vecino 
 # mas cercano al limite de busqueda 
 """
+******************************************************************************
 Se realiza este procedimiento porque, en general, el lim_inf y lim_sup
 no son multiplos enteros de el periodo de muestreo (T_muestreo_lambda) y por 
 lo tanto al tratar de buscar el indice en el arreglo del OPL, en el dominio 
 de Fourier, no se encontrara el valor exacto y esto devuelve un valor Null
+******************************************************************************
 """
 
-# Creamos objeto de la clase NN 
+# Creamos objeto de la clase NearestNeighbors 
 # Como solo ocupamos el vecino mas cercano entonces el parametro n_neighbors=1
 nn = NearestNeighbors(n_neighbors=1)
 
 # Encontrando el vecino mas cercano a los limites de busqueda en opl
 """
+*******************************************************************************
 Dado que el metodo de Machine Learning solo funciona para datos bidimensionales
-entonces transformamos el array de OPL en Fourier en una matriz
+entonces transformamos el array del OPL en una matriz
+*******************************************************************************
 """
 nn.fit(opl.reshape((len(opl),1)))
 
 """
+******************************************************************************
 Identificamos el indice en el arreglo OPL del vecino mas cercano al valor del
 limite inferior y superior con el uso del metodo kneighbors
+******************************************************************************
 """
 index_lim_inf = nn.kneighbors([[lim_inf]], 1, return_distance=False)[0,0]
 index_lim_sup = nn.kneighbors([[lim_sup]], 1, return_distance=False)[0,0]
 
 """
+******************************************************************************
 Una vez obtenido el indice ya podemos identificar de que valor se trata en el
 array del OPL y por tanto tambien de AMP
+******************************************************************************
 """
 lim_inf_ = opl[index_lim_inf]
 lim_sup_ = opl[index_lim_sup]
@@ -135,20 +148,27 @@ lim_sup_ = opl[index_lim_sup]
 
 """
 ==============================================================================
-Aplicacion de filtro FIR pasa-bajos
+Aplicacion de filtro FIR pasa-bajos de fase lineal 
 ==============================================================================
 """
 
-# Parametro temporal 
-lambda_inicial = lambda_[0]
-
 # Al realizar el cambio de variable beta = 1/lambda, tenemos que 
-T_muestreo_beta = T_muestreo_lambda / (lambda_inicial*(lambda_inicial +
-                                                       T_muestreo_lambda))
+T_muestreo_beta = (1/lambda_inicial - 1/lambda_final)/n
+
+# Multiplicamos todo el array por un factor de 2x10**6
+"""
+******************************************************************************
+Se multiplica por este factor para que las unidades de T_muestreo esten en
+milimetros y reflejen el valor del OPL, una explicacion más detallada se
+encuentra en el archivo FFT_support 
+******************************************************************************
+"""
+T_muestreo_beta_opl = T_muestreo_beta*(2*10**6)
+
 
 # Creando objeto de la clase Filtro
 filtro = Filtro(_senal=potencia_dB, # senal a filtrar
-                _T_muestreo=T_muestreo_beta*(2*10**6), # Periodo de muestreo
+                _T_muestreo=T_muestreo_beta_opl, # Periodo de muestreo
                 _frec_corte=3, # Frecuencia de corte en unidades de T_muestreo
                 _orden=901) # Orden del Filtro
 
@@ -160,8 +180,10 @@ senal_filtrada = filtro.filtrar_por_ventana_de_gauss(sigma=0.2)
 Aplicando FFT a la señal filtrada
 ==============================================================================
 """
-opl_, amp_ = encontrar_FFT(lambda_inicial, T_muestreo_lambda, senal_filtrada)
 
+opl_filt,amp_filt = encontrar_FFT_dominio_en_OPL(lambda_inicial=lambda_inicial, 
+                                                 lambda_final=lambda_final, 
+                                                  senal=senal_filtrada)
 
 """
 ==============================================================================
@@ -183,15 +205,14 @@ Aplicando tecnica WINDOWING:
 
 # Construyendo una ventana w_n del mismo tamaño que el array de la senal
 
-#w_n = ventana_de_gauss(orden=len(senal_filtrada_esc_lineal), sigma=1.4)
+# w_n = ventana_de_gauss(orden=len(senal_filtrada_esc_lineal), sigma=1.4)
 w_n = ventana_de_hanning(orden=len(senal_filtrada_esc_lineal))
-
-# Normalizando con respecto a la suma de todos los datos para asegurar
-# que se preserva la amplitud
-w_n /= sum(w_n)
+# w_n = ventana_flattop(orden=len(senal_filtrada_esc_lineal))
 
 # Enventanado de la senal en escala lineal
-senal_enventanada = senal_filtrada_esc_lineal * w_n
+senal_enventanada = senal_filtrada_esc_lineal* w_n
+
+
 
 """
 ==============================================================================
@@ -202,19 +223,28 @@ Mejoramiento de la resolucion en Fourier post-windowing
 # Mejorando la resolucion del espectro añadiendo 0 a los extremos del array
 
 # Numero de ceros a agregar en cada extremo
-n_zeros = 10000
+n_zeros = 1000
+"""
+******************************************************************************
+Empiricamente se ha determinado que cuando n_zeros > 10 000 entonces
+el espectro se desplaza por lo que se sugiere usar 0 < n_zeros < 1000
+******************************************************************************
+"""
 zeros = list(np.zeros(n_zeros))
 
 # Agregamos los ceros a cada extremo de la señal
 senal_enventanada = zeros + list(senal_enventanada)
 senal_enventanada = np.array(senal_enventanada + zeros)
 
-# Agregando las correspondientes longitudes de onda (virtuales) correspondientes
-# a los ceros añadidos a los extremos, notese que T_muestreo no cambia 
+# Agregando las correspondientes longitudes de onda (virtuales) 
+# correspondientes a los ceros añadidos a los extremos 
 lambda_mejorada = np.arange(1510-n_zeros*T_muestreo_lambda, 
-                    1590 + n_zeros*T_muestreo_lambda + 0.001 ,
+                    1590 + n_zeros*T_muestreo_lambda-0.00001,
                     T_muestreo_lambda) 
 
+# Le agregamos un -0.00001 al final del segun parametro para asegurar que la
+# longitud de lambda_mejorada sea la misma que la de la senal enventanada
+# dado que si se lo quitamos en ocaciones la longitud difiere por un valor  
 
 """
 ==============================================================================
@@ -222,12 +252,14 @@ Aplicando FFT a la señal mejorada
 ==============================================================================
 """
 
+# Dado que hemos extendido el dominio en lambda calculamos de nuevo
+lambda_inicial = lambda_mejorada[0]
+lambda_final = lambda_mejorada[-1]
+
 # Calculando la FFT de la señal enventanada
-
-opl_env, amp_env = encontrar_FFT(lambda_inicial,
-                                 T_muestreo_lambda, 
-                                 senal_enventanada)
-
+opl_env, amp_env = encontrar_FFT_dominio_en_OPL(lambda_inicial=lambda_inicial, 
+                                                lambda_final=lambda_final, 
+                                                senal=senal_enventanada)
 
 """
 ==============================================================================
@@ -235,14 +267,13 @@ Eliminando componente de DC a la señal mejorada
 ==============================================================================
 """
 
-# Eliminando la componenete de DC por medio de eliminar los primeros indices
-# Cuantos componentes eliminados? 
-
+# Eliminando la componenete de DC hasta un margen fijo en el opl
 dc_margen = 0.1  # mm
 
+# buscamos el indice en el array opl mas cercano a dc_margen
 nn.fit(opl_env.reshape((len(opl_env),1)))
 index_dc_margen = nn.kneighbors([[dc_margen]], 1, return_distance=False)[0,0]
-
+# eliminamos todas las contribuciones del espectro de fourier hasta dc_margen
 amp_env[:index_dc_margen] = np.zeros(index_dc_margen)
 
 
@@ -264,7 +295,7 @@ amp_env_temp = amp_env[index_lim_inf:index_lim_sup]
 
 # Necesitamos definir un valor limite en altura en el grafico de la amplitud
 # se buscaran los maximos que superen este valor
-lim_amp = 0.17e-5
+lim_amp = 0.0025
 
 # Buscando maximos en la region limitada
 picos, _ = find_peaks(amp_env_temp, height = lim_amp)
@@ -331,7 +362,7 @@ ax.legend(loc="lower left",fontsize=30)
 
 # Graficando la FFT de la señal filtrada
 ax = plt.subplot(3,2,4)
-fft_graph, = ax.plot(opl_,amp_, linewidth=1.5,color="teal")
+fft_graph, = ax.plot(opl_filt,amp_filt, linewidth=1.5,color="teal")
 ax.set_xlabel(xlabel=r"$OPL [mm]$", fontsize=30)
 ax.set_ylabel(ylabel=r"$|dB|$", fontsize=30)
 ax.set_title(label="Dominio de Fourier", fontsize=30)
