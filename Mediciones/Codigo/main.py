@@ -19,7 +19,7 @@ import matplotlib.pyplot as plt
 from matplotlib.animation import writers, FuncAnimation
 import os
 from FabryPerot.FFT_support import encontrar_FFT_dominio_en_OPL
-from FabryPerot.Filtros_support import Filtro, ventana_de_gauss, ventana_de_hanning, ventana_flattop
+from FabryPerot.Filtros_support import Filtro, ventana_de_gauss, ventana_de_hanning, ventana_flattop, ventana_kaiser_bessel
 from sklearn.neighbors import NearestNeighbors
 from scipy.signal import find_peaks
 
@@ -34,10 +34,10 @@ plt.rcParams.update({'font.size': 20})
 
 
 # Importando archivos 
-fecha_medicion = "17-11-2021"
-carpeta = "2GAP-CAPILAR-AIRE-AGUA-100um"
+fecha_medicion = "9-11-2021"
+carpeta = "2GAP-VIDRIO-AIRE-0.1um"
 # Incremento en la medicion
-inc = 100 # um
+inc = 0.1 # um
 
 ruta_directorio = "../" + fecha_medicion + "/" + carpeta
 # Calculando el numero de archivos en la carpeta
@@ -63,7 +63,7 @@ potencia_dBm_ref = data_ref[:,1]
 # Normalizando el espectro medido respecto a la referecia
 # Debido a que estan en escala logaritmica, la division es una resta
 
-potencia_dB = potencia_dBm - potencia_dBm_ref
+potencia_dB = 10**(potencia_dBm/10)  # - potencia_dBm_ref
 
 # T_muestreo_lambda = (lambda_[-1] - lambda_[0])/len(lambda_) Approx 0.005 nm
 
@@ -75,7 +75,7 @@ T_muestreo_lambda = (lambda_final-lambda_inicial)/m
 # Limite del dominio OPL en Fourier
 
 lim_inf = 0.0 # mm
-lim_sup = 5.0 # mm
+lim_sup = 10 # mm
 
 # Al realizar el cambio de variable beta = 1/lambda, tenemos que 
 T_muestreo_beta = (1/lambda_inicial - 1/lambda_final)/m
@@ -91,13 +91,18 @@ filtro = Filtro(_senal=potencia_dB,
 
 potencia_dB_filtrada = filtro.filtrar_por_ventana_de_gauss(0.1)
 
-potencia_filtrada_lineal = 10**(potencia_dB_filtrada/10)
+potencia_filtrada_lineal = potencia_dB_filtrada #10**(potencia_dB_filtrada/10)
 
 # Creando ventana
-# w_n = ventana_de_gauss(orden=len(potencia_filtrada_lineal), sigma=0.45)
-w_n = ventana_de_hanning(orden=len(potencia_filtrada_lineal))
+
+# w_n = ventana_de_gauss(orden=len(potencia_filtrada_lineal), sigma=0.1)
+
+# w_n = ventana_de_hanning(orden=len(potencia_filtrada_lineal))
+
 # w_n = ventana_flattop(orden = len(potencia_filtrada_lineal))
-# w_n = np.ones(len(potencia_dB_filtrada))
+
+w_n = ventana_kaiser_bessel(orden=len(potencia_filtrada_lineal), beta=0)
+
 potencia_filtrada_limitada_lineal = w_n*potencia_filtrada_lineal
 
 
@@ -127,7 +132,7 @@ lim_sup_opl = opl[index_lim_sup]
 
 # Eliminando la componenete de DC hasta un margen fijo en el opl
 
-dc_margen = 0.08  # mm
+dc_margen = 0.2  # mm
 
 nn = NearestNeighbors(n_neighbors=1)
 
@@ -145,7 +150,7 @@ Mejoramiento de la resolucion en Fourier post-windowing
 """
 
 # Numero de ceros a agregar en cada extremo
-n_zeros = 1000
+n_zeros = 100
 zeros = list(np.zeros(n_zeros))
 
 # Agregamos los ceros a cada extremo de la señal
@@ -172,7 +177,7 @@ amp_temp = amp[index_lim_inf:index_lim_sup]
 
 # Necesitamos definir un valor limite en altura en el grafico de la amplitud
 # se buscaran los maximos que superen este valor
-lim_amp = 0.00025
+lim_amp = 500e50
 
 # Buscando maximos en la region limitada
 picos, _ = find_peaks(amp_temp, height = lim_amp)
@@ -248,7 +253,8 @@ def actualizar(i):
     
     # Aplicando Filtro pasabajos en una frecuencia de corte proporcional al incremento en las mediciones
     # medido en milimetros
-    f_c = (20+i)*(inc*0.001)
+    #f_c = (20+i)*(inc*0.001)
+    f_c = lim_sup
     filtro = Filtro(_senal=potencia_dB, 
                     _T_muestreo=T_muestreo_beta_opl, 
                     _frec_corte=f_c, 
@@ -256,7 +262,7 @@ def actualizar(i):
     #potencia_dB_filtrada = filtro.filtrar_por_ventana_de_gauss(0.1)
     potencia_dB_filtrada = filtro.filtrar_por_ventana_de_hanning()
     # Transformando a escala lineal 
-    potencia_filtrada_lineal = 10**(potencia_dB_filtrada/10)
+    potencia_filtrada_lineal = potencia_dB_filtrada #10**(potencia_dB_filtrada/10)
     
     # Limitando el ancho de banda espectral
     potencia_filtrada_limitada_lineal = w_n*potencia_filtrada_lineal
@@ -282,7 +288,7 @@ def actualizar(i):
     
     # Necesitamos definir un valor limite en altura en el grafico de la amplitud
     # se buscaran los maximos que superen este valor
-    lim_amp = 0.00025
+    lim_amp = 0.0020
     
     # Buscando maximos en la region limitada
     picos, _ = find_peaks(amp_temp, height = lim_amp)
