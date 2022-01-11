@@ -38,7 +38,7 @@ carpeta = "2GAP-VIDRIO-AIRE-0.1um"
 
 ruta_directorio = "../" + fecha_medicion + "/" + carpeta
 
-nombre_archivo = "Espectro (1).txt"
+nombre_archivo = "Espectro (12).txt"
 
 path = ruta_directorio + "/" + nombre_archivo
 
@@ -58,14 +58,18 @@ Formateando y normalizando datos del espectro respecto a la referencia
 
 lambda_ref, potencia_dBm_ref = referencia[:,0], referencia[:,1]
 
+potencia_dBm_ref = 10**(potencia_dBm_ref/10)
+
 # Separando datos por columnas
 lambda_ = data[:,0]
-potencia_dBm = data[:,1]
+
+
+potencia_dBm = 10**(data[:,1]/10)
 
 
 # Normalizando respecto a la referencia
 
-potencia_dB = potencia_dBm - potencia_dBm_ref
+potencia_dB = potencia_dBm  - potencia_dBm_ref
 
 """
 ==============================================================================
@@ -74,7 +78,7 @@ Definicion de parametros
 """
 # Definiendo limite de busqueda en el espectro de Fourier (OPL en milimetros)
 lim_inf = 0 # mm 
-lim_sup = 3 # mm
+lim_sup = 2.0 # mm
 
 
 #Periodo de muestreo = (lambda_[-1] - lambda_[0])/len(lambda_) Approx 0.005 nm
@@ -169,7 +173,7 @@ T_muestreo_beta_opl = T_muestreo_beta*(2*10**6)
 # Creando objeto de la clase Filtro
 filtro = Filtro(_senal=potencia_dB, # senal a filtrar
                 _T_muestreo=T_muestreo_beta_opl, # Periodo de muestreo
-                _frec_corte=3, # Frecuencia de corte en unidades de T_muestreo
+                _frec_corte=lim_sup, # Frecuencia de corte en unidades de T_muestreo
                 _orden=901) # Orden del Filtro
 
 # Filtrando por el metodo de las ventanas
@@ -193,7 +197,7 @@ Cambiando la señal filtrada a escala Lineal
 
 # Cambiando a escala lineal
 
-senal_filtrada_esc_lineal = 10**(senal_filtrada/10)
+senal_filtrada_esc_lineal = senal_filtrada #10**(senal_filtrada/10)
 
 """
 ==============================================================================
@@ -209,7 +213,15 @@ Aplicando tecnica WINDOWING:
 # w_n = ventana_de_hanning(orden=len(senal_filtrada_esc_lineal))
 # w_n = ventana_flattop(orden=len(senal_filtrada_esc_lineal))
 
-w_n = ventana_kaiser_bessel(orden=len(senal_filtrada_esc_lineal), beta=14)
+"""
+La ventana de Keiser-Bessel es similar a otras ventanas para distintos 
+valores del parametro beta,  por ejemplo:
+    - beta = 0 - Ventana cuadrada
+    - beta = 5 - Ventana de Hamming 
+    - beta = 6 - Ventana de Hanning
+    - beta = 8.6 - Ventana de Blackman - Harris
+"""
+w_n = ventana_kaiser_bessel(orden=len(senal_filtrada_esc_lineal), beta=0)
 # Enventanado de la senal en escala lineal
 senal_enventanada = senal_filtrada_esc_lineal * w_n
 
@@ -224,7 +236,7 @@ Mejoramiento de la resolucion en Fourier post-windowing
 # Mejorando la resolucion del espectro añadiendo 0 a los extremos del array
 
 # Numero de ceros a agregar en cada extremo
-n_zeros = 100
+n_zeros = 0
 """
 ******************************************************************************
 Empiricamente se ha determinado que cuando n_zeros > 10 000 entonces
@@ -269,7 +281,7 @@ Eliminando componente de DC a la señal mejorada
 """
 
 # Eliminando la componenete de DC hasta un margen fijo en el opl
-dc_margen = 0.1  # mm
+dc_margen = 0.0  # mm
 
 # buscamos el indice en el array opl mas cercano a dc_margen
 nn.fit(opl_env.reshape((len(opl_env),1)))
@@ -296,7 +308,7 @@ amp_env_temp = amp_env[index_lim_inf:index_lim_sup]
 
 # Necesitamos definir un valor limite en altura en el grafico de la amplitud
 # se buscaran los maximos que superen este valor
-lim_amp = 0.025
+lim_amp = 5
 
 # Buscando maximos en la region limitada
 picos, _ = find_peaks(amp_env_temp, height = lim_amp)
