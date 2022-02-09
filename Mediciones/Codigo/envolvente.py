@@ -33,7 +33,7 @@ carpeta = "2GAP-VIDRIO-AIRE-0.1um"
 
 ruta_directorio = "../" + fecha_medicion + "/" + carpeta
 
-nombre_archivo = "Espectro (12).txt"
+nombre_archivo = "Espectro (11).txt"
 
 path = ruta_directorio + "/" + nombre_archivo
 
@@ -43,7 +43,7 @@ path = ruta_directorio + "/referencia.txt"
 
 referencia = np.loadtxt(path)
 
-# Seprando datos de la referencia por columnas
+# Separando datos de la referencia por columnas
 
 lambda_ref, potencia_dBm_ref = referencia[:,0], referencia[:,1]
 lambda_, potencia_dBm = data[:,0], data[:,1]
@@ -58,7 +58,7 @@ Cambiando todo a escala lineal y realizando la resta de las señales
 
 potencia_ref = 10**(potencia_dBm_ref/10)
 
-potencia_ = 10**(data[:,1]/10)
+potencia_ = 10**(potencia_dBm/10)
 
 
 # Restando ambas señales
@@ -70,8 +70,6 @@ potencia = potencia_  - potencia_ref
 Definicion de parametros
 ==============================================================================
 """
-
-#Periodo de muestreo = (lambda_[-1] - lambda_[0])/len(lambda_) Approx 0.005 nm
 
 lambda_inicial = lambda_[0] # Valor inicial del arreglo
 lambda_final = lambda_[-1] # Valor final del arreglo
@@ -99,6 +97,7 @@ encuentra en el archivo FFT_support
 """
 T_muestreo_beta_opl = T_muestreo_beta*(2*10**6)
 
+# Frecuencia de corte en [mm] para el filtro pasa bajos
 f_c = 2.0 # mm 
 
 # Creando objeto de la clase Filtro
@@ -131,6 +130,26 @@ picos, _ = find_peaks(senal_invertida,height= lim_amplitud)
 envolvente_inferior = senal_filtrada[picos]
 lambda_envolvente_inferior = lambda_[picos]
 
+
+"""
+==============================================================================
+Encontrando los puntos de interseccion:
+    Se tomaran los puntos maximos de la envolvente inferior
+==============================================================================
+"""
+
+lim_amplitud = -0.0002
+# Buscando picos por encima de 0
+picos, _ = find_peaks(envolvente_inferior, height = lim_amplitud)
+
+intersecciones=lambda_envolvente_inferior[picos]
+
+print("=====================================================================")
+print(intersecciones)
+print("=====================================================================")
+
+
+
 """
 ==============================================================================
 Graficando resultados
@@ -139,7 +158,6 @@ Graficando resultados
 
 # Creando figura
 fig,ax = plt.subplots(figsize=(40,20))
-fig.set_tight_layout(True)
 # Pone lo mas juntas las graficas posibles
 fig.set_tight_layout(True)
 # Para que no se empalmen los titulos en los ejes
@@ -190,9 +208,27 @@ ax.set_title(label="Dominio óptico", fontsize=30)
 #ax.set_ylim([-40,-10])
 ax.legend(loc="best",fontsize=30)
 
+
+#Creando caja de texto para mostrar resultados en la imagen
+
+# Concatenando los puntos maximos de la envolvente inferior
+text = ""
+for interseccion in intersecciones: 
+    text += "\nMaximo localizado en: %.3f mm" % interseccion
+# Eliminando el espacio en blanco inicial
+text = text[1:]
+
+# Creando cadena para caja de texto
+textstr = text 
+
+# Estas son propiedades de matplotlib.patch.Patch
+props = dict(boxstyle='round', facecolor='teal', alpha=0.5)
+
+graph_text = ax.text(0.42, 0.2, textstr, transform=ax.transAxes, fontsize=35,
+        verticalalignment='top', bbox=props)
+
+
 # Guardando figura
 plt.savefig(carpeta + "-" + nombre_archivo + ".png")
 # Mostrando Figura
 plt.show()
-
-
