@@ -5,15 +5,13 @@ Created on Fri Nov 19 12:50:56 2021
 
 @author: alejandro_goper
 
-Este script es para realizar pruebas de la obtencion de la envolvente
-de una señal en el dominio optico
+Este script es para realizar pruebas de la obtencion de los puntos de 
+interseccion entre señales particulares
 
 """
 
 from FabryPerot.Filtros_support import Filtro, ventana_de_gauss, ventana_de_hanning, ventana_flattop, ventana_kaiser_bessel
-from FabryPerot.FFT_support import encontrar_FFT_dominio_en_OPL
 from scipy.signal import find_peaks
-from sklearn.neighbors import NearestNeighbors
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -134,22 +132,56 @@ lambda_envolvente_inferior = lambda_[picos]
 """
 ==============================================================================
 Encontrando los puntos de interseccion:
-    Se tomaran los puntos maximos de la envolvente inferior
+    Se tomaran los puntos maximos de la envolvente inferior y los minimos de
+    la envolvente inferior y luego realizamos un promedio de ambos valores
+    
+* Para relacionar los maximos con los minimos correspondientes se realiza la 
+la comparacion punto a punto entre la envolvente inferior y superior, ambos
+puntos son interseccion si la distancia entre ellos es menor a 1.5 mm 
 ==============================================================================
 """
 
 lim_amplitud = -0.0002
-# Buscando picos por encima de 0
+# Buscando picos por encima de -0.0002
 picos, _ = find_peaks(envolvente_inferior, height = lim_amplitud)
 
-intersecciones=lambda_envolvente_inferior[picos]
-
-print("=====================================================================")
-print(intersecciones)
-print("=====================================================================")
+intersecciones_inferior=lambda_envolvente_inferior[picos]
 
 
+# Buscando picos por encima de -0.0002
+picos, _ = find_peaks(-envolvente_superior, height = lim_amplitud)
+intersecciones_superior = lambda_envolvente_superior[picos]
 
+
+# Tomaremos siempre el arreglo con menos puntos como el arreglo principal
+
+if(len(intersecciones_superior) < len(intersecciones_inferior)):
+    for punto in intersecciones_superior:    
+        distancia = np.abs(punto - intersecciones_inferior)
+        index =np.where(distancia < 1.8)[0]
+        if(index != None):
+            interseccion = 0.5*(punto + intersecciones_inferior[int(index[0])])
+            print("Intersección en: ", interseccion)
+    
+            
+elif(len(intersecciones_superior) > len(intersecciones_inferior)):
+   for punto in intersecciones_inferior:    
+        distancia = np.abs(punto - intersecciones_superior)
+        index =np.where(distancia < 1.8)[0]
+        if(index != None):
+            interseccion = 0.5*(punto + intersecciones_superior[int(index[0])])
+            print("Intersección en: ", interseccion)
+    
+else: 
+    for punto in intersecciones_superior:    
+        distancia = np.abs(punto - intersecciones_inferior)
+        index =np.where(distancia < 1.8)[0]
+        if(index != None):
+            interseccion = 0.5*(punto + intersecciones_inferior[int(index[0])])
+            print("Intersección en: ", interseccion)
+    
+    
+    
 """
 ==============================================================================
 Graficando resultados
@@ -197,6 +229,26 @@ ax.set_ylabel(ylabel=r"$[u.a]$", fontsize=30)
 ax.set_title(label="Dominio óptico", fontsize=30)
 ax.legend(loc="best",fontsize=30)
 
+#Creando caja de texto para mostrar los resultados en la imagen
+
+# Concatenando los puntos maximos de la envolvente inferior
+text = ""
+for interseccion in intersecciones_superior: 
+    text += "\nMinimo localizado en: %.3f mm" % interseccion
+# Eliminando el espacio en blanco inicial
+text = text[1:]
+
+# Creando cadena para caja de texto
+textstr = text 
+
+# Estas son propiedades de matplotlib.patch.Patch
+props = dict(boxstyle='round', facecolor='teal', alpha=0.5)
+
+graph_text = ax.text(0.05, 0.22, textstr, transform=ax.transAxes, fontsize=35,
+        verticalalignment='top', bbox=props)
+
+
+
 # Graficando la envolvente
 ax = plt.subplot(2,2,4)
 ax.plot(lambda_envolvente_inferior,envolvente_inferior,
@@ -208,12 +260,11 @@ ax.set_title(label="Dominio óptico", fontsize=30)
 #ax.set_ylim([-40,-10])
 ax.legend(loc="best",fontsize=30)
 
-
 #Creando caja de texto para mostrar resultados en la imagen
 
 # Concatenando los puntos maximos de la envolvente inferior
 text = ""
-for interseccion in intersecciones: 
+for interseccion in intersecciones_inferior: 
     text += "\nMaximo localizado en: %.3f mm" % interseccion
 # Eliminando el espacio en blanco inicial
 text = text[1:]
