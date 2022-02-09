@@ -31,7 +31,7 @@ carpeta = "2GAP-VIDRIO-AIRE-0.1um"
 
 ruta_directorio = "../" + fecha_medicion + "/" + carpeta
 
-nombre_archivo = "Espectro (12).txt"
+nombre_archivo = "Espectro (1).txt"
 
 path = ruta_directorio + "/" + nombre_archivo
 
@@ -153,33 +153,42 @@ picos, _ = find_peaks(-envolvente_superior, height = lim_amplitud)
 intersecciones_superior = lambda_envolvente_superior[picos]
 
 
-# Tomaremos siempre el arreglo con menos puntos como el arreglo principal
+# Lista para almacenar las intersecciones
+intersecciones = []
 
+# Tomaremos siempre el arreglo con menos puntos como el arreglo principal
 if(len(intersecciones_superior) < len(intersecciones_inferior)):
+    # Para cada punto del arreglo de intersecciones superior
     for punto in intersecciones_superior:    
+        # calculamos la distancia a todos los puntos del arreglo de 
+        # intersecciones inferior
         distancia = np.abs(punto - intersecciones_inferior)
-        index =np.where(distancia < 1.8)[0]
-        if(index != None):
+        # Buscamos los indices de los puntos cuya distancia sea 
+        index =np.where(distancia < 1.8)
+        # Primero verificamos si el arreglo index no esta vacio 
+        if(np.size(index)):
+            # Si no esta vacio se realiza el promedio entre los dos puntos
             interseccion = 0.5*(punto + intersecciones_inferior[int(index[0])])
-            print("Intersección en: ", interseccion)
-    
+            intersecciones.append(interseccion)
             
 elif(len(intersecciones_superior) > len(intersecciones_inferior)):
    for punto in intersecciones_inferior:    
         distancia = np.abs(punto - intersecciones_superior)
-        index =np.where(distancia < 1.8)[0]
-        if(index != None):
+        index =np.where(distancia < 1.8)
+        if(np.size(index)):
             interseccion = 0.5*(punto + intersecciones_superior[int(index[0])])
-            print("Intersección en: ", interseccion)
+            intersecciones.append(interseccion)
     
 else: 
     for punto in intersecciones_superior:    
         distancia = np.abs(punto - intersecciones_inferior)
-        index =np.where(distancia < 1.8)[0]
-        if(index != None):
+        index =np.where(distancia < 1.8)
+        if(np.size(index)):
             interseccion = 0.5*(punto + intersecciones_inferior[int(index[0])])
-            print("Intersección en: ", interseccion)
-    
+            intersecciones.append(interseccion)
+
+# Convirtiendo a array numpy
+np.array(intersecciones)
     
     
 """
@@ -199,7 +208,7 @@ fig.subplots_adjust(wspace=1.2)
 plt.rcParams.update({'font.size': 20})
 
 # Graficando el espectro optico inicial
-ax = plt.subplot(2,2,1)
+ax = plt.subplot(1,2,1)
 espectro_graph, = ax.plot(lambda_,potencia, linewidth=1.5, 
                           label= "Medición")
 ax.set_xlabel(xlabel=r"$\lambda [nm]$", fontsize=30)
@@ -209,7 +218,7 @@ ax.set_title(label="Dominio óptico", fontsize=30)
 ax.legend(loc="best",fontsize=30)
 
 # Graficando espectro filtrado
-ax = plt.subplot(2,2,2)
+ax = plt.subplot(1,2,2)
 espectro_graph, = ax.plot(lambda_,senal_filtrada, linewidth=1.5,color="purple",
                           label="Señal filtrada")
 ax.set_xlabel(xlabel=r"$\lambda [nm]$", fontsize=30)
@@ -219,22 +228,12 @@ ax.legend(loc="best")
 #ax.set_xlim([lim_inf_,lim_sup_])
 #ax.set_ylim([0,1])
 
-# Graficando la envolvente
-ax = plt.subplot(2,2,3)
-ax.plot(lambda_envolvente_superior,envolvente_superior,
-           label="Envolvente superior", linewidth = 1.5) 
-#ax.set_label("Envolvente")
-ax.set_xlabel(xlabel=r"$\lambda [nm]$", fontsize=30)
-ax.set_ylabel(ylabel=r"$[u.a]$", fontsize=30)
-ax.set_title(label="Dominio óptico", fontsize=30)
-ax.legend(loc="best",fontsize=30)
-
 #Creando caja de texto para mostrar los resultados en la imagen
 
-# Concatenando los puntos maximos de la envolvente inferior
+# Concatenando las intersecciones
 text = ""
-for interseccion in intersecciones_superior: 
-    text += "\nMinimo localizado en: %.3f mm" % interseccion
+for interseccion in intersecciones: 
+    text += "\nInterseccion en: %.3f mm" % interseccion
 # Eliminando el espacio en blanco inicial
 text = text[1:]
 
@@ -244,40 +243,8 @@ textstr = text
 # Estas son propiedades de matplotlib.patch.Patch
 props = dict(boxstyle='round', facecolor='teal', alpha=0.5)
 
-graph_text = ax.text(0.05, 0.22, textstr, transform=ax.transAxes, fontsize=35,
+graph_text = ax.text(0.5, 0.15, textstr, transform=ax.transAxes, fontsize=35,
         verticalalignment='top', bbox=props)
-
-
-
-# Graficando la envolvente
-ax = plt.subplot(2,2,4)
-ax.plot(lambda_envolvente_inferior,envolvente_inferior,
-           label="Envolvente inferior", color="purple", linewidth = 1.5) 
-#ax.set_label("Envolvente")
-ax.set_xlabel(xlabel=r"$\lambda [nm]$", fontsize=30)
-ax.set_ylabel(ylabel=r"$[u.a]$", fontsize=30)
-ax.set_title(label="Dominio óptico", fontsize=30)
-#ax.set_ylim([-40,-10])
-ax.legend(loc="best",fontsize=30)
-
-#Creando caja de texto para mostrar resultados en la imagen
-
-# Concatenando los puntos maximos de la envolvente inferior
-text = ""
-for interseccion in intersecciones_inferior: 
-    text += "\nMaximo localizado en: %.3f mm" % interseccion
-# Eliminando el espacio en blanco inicial
-text = text[1:]
-
-# Creando cadena para caja de texto
-textstr = text 
-
-# Estas son propiedades de matplotlib.patch.Patch
-props = dict(boxstyle='round', facecolor='teal', alpha=0.5)
-
-graph_text = ax.text(0.05, 0.22, textstr, transform=ax.transAxes, fontsize=35,
-        verticalalignment='top', bbox=props)
-
 
 # Guardando figura
 plt.savefig(carpeta + "-" + nombre_archivo + ".png")
