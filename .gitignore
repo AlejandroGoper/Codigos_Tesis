@@ -3,6 +3,7 @@
 
 *.txt
 *.pyc
+*.dat
 *.mp4
 *.xlsx
 *.png
