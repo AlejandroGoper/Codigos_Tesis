@@ -33,7 +33,7 @@ carpeta = "2GAP-VIDRIO-AIRE-0.1um"
 
 ruta_directorio = "../" + fecha_medicion + "/" + carpeta
 
-nombre_archivo = "Espectro (11).txt"
+nombre_archivo = "Espectro (12).txt"
 
 path = ruta_directorio + "/" + nombre_archivo
 
@@ -224,7 +224,7 @@ textstr = text
 # Estas son propiedades de matplotlib.patch.Patch
 props = dict(boxstyle='round', facecolor='teal', alpha=0.5)
 
-graph_text = ax.text(0.42, 0.2, textstr, transform=ax.transAxes, fontsize=35,
+graph_text = ax.text(0.05, 0.22, textstr, transform=ax.transAxes, fontsize=35,
         verticalalignment='top', bbox=props)
 
 
