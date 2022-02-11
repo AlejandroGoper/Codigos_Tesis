@@ -1,0 +1,289 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Fri Nov 19 12:50:56 2021
+
+@author: alejandro_goper
+
+Este script es para analizar el efecto vernier, es un analisis similar al 
+realizado en el script envolventes.py
+"""
+
+from FabryPerot.Filtros_support import Filtro, ventana_de_gauss, ventana_de_hanning, ventana_flattop, ventana_kaiser_bessel
+from scipy.signal import find_peaks
+import numpy as np
+import matplotlib.pyplot as plt
+
+"""
+==============================================================================
+Importando Datos
+==============================================================================
+"""
+
+# Importando un espectro del fabry perot: 2GAP-VIDRIO-AIRE-0.1um
+
+# Importando archivos 
+
+fecha_medicion = "1-2-2022"
+
+carpeta = "3GAP-CAPILAR-AIRE-FIBRA-AIRE-100nm"
+
+ruta_directorio = "../" + fecha_medicion + "/" + carpeta
+
+nombre_archivo = "Espectro (1).txt"
+
+path = ruta_directorio + "/" + nombre_archivo
+
+data = np.loadtxt(path, skiprows=0)
+
+path = ruta_directorio + "/referencia.txt"
+
+referencia = np.loadtxt(path)
+
+# Separando datos de la referencia por columnas
+
+lambda_ref, potencia_dBm_ref = referencia[:,0], referencia[:,1]
+lambda_, potencia_dBm = data[:,0], data[:,1]
+
+# Damos por hecho que lambda_ = lambda_ref
+
+"""
+==============================================================================
+Cambiando todo a escala lineal y realizando la resta de las señales
+==============================================================================
+"""
+
+potencia_ref = 10**(potencia_dBm_ref/10)
+
+potencia_ = 10**(potencia_dBm/10)
+
+
+# Restando ambas señales
+
+potencia_dB = potencia_dBm  - potencia_dBm_ref
+
+potencia = 10**(potencia_dB/10)
+
+"""
+==============================================================================
+Definicion de parametros
+==============================================================================
+"""
+
+lambda_inicial = lambda_[0] # Valor inicial del arreglo
+lambda_final = lambda_[-1] # Valor final del arreglo
+n = len(lambda_) # Cantidad de datos en el arreglo
+
+T_muestreo_lambda = (lambda_final-lambda_inicial)/n
+       
+
+"""
+==============================================================================
+Aplicacion de filtro FIR pasa-bajos de fase lineal 
+==============================================================================
+"""
+
+# Al realizar el cambio de variable beta = 1/lambda, tenemos que 
+T_muestreo_beta = (1/lambda_inicial - 1/lambda_final)/n
+
+# Multiplicamos todo el array por un factor de 2x10**6
+
+"""
+******************************************************************************
+Se multiplica por este factor para que las unidades de T_muestreo esten en
+milimetros y reflejen el valor del OPL, una explicacion más detallada se
+encuentra en el archivo FFT_support 
+******************************************************************************
+"""
+T_muestreo_beta_opl = T_muestreo_beta*(2*10**6)
+
+# Frecuencia de corte en [mm] para el filtro pasa bajos
+f_c = 2.0 # mm 
+
+# Creando objeto de la clase Filtro
+filtro = Filtro(_senal=potencia, # senal a filtrar
+                _T_muestreo=T_muestreo_beta_opl, # Periodo de muestreo
+                _frec_corte=f_c, # Frecuencia de corte en unidades de T_muestreo
+                _orden=901) # Orden del Filtro
+
+# Filtrando por el metodo de las ventanas
+senal_filtrada = filtro.filtrar_por_ventana_de_gauss(sigma=0.2)
+
+
+
+"""
+==============================================================================
+Encontrando las envolventes superior e inferior 
+==============================================================================
+"""
+lim_amplitud = senal_filtrada.min()
+# Buscando picos por encima de 0
+picos, _ = find_peaks(senal_filtrada, height = lim_amplitud)
+
+envolvente_superior = senal_filtrada[picos]
+lambda_envolvente_superior = lambda_[picos]
+
+# Para encontrar los minimos multiplicamos la senal original por -1
+senal_invertida = - senal_filtrada
+lim_amplitud = senal_invertida.min()
+picos, _ = find_peaks(senal_invertida,height= lim_amplitud)
+
+envolvente_inferior = senal_filtrada[picos]
+lambda_envolvente_inferior = lambda_[picos]
+
+
+"""
+==============================================================================
+Encontrando los puntos de interseccion:
+    Se tomaran los puntos maximos de la envolvente inferior y los minimos de
+    la envolvente inferior y luego realizamos un promedio de ambos valores
+    
+* Para relacionar los maximos con los minimos correspondientes se realiza la 
+la comparacion punto a punto entre la envolvente inferior y superior, ambos
+puntos son interseccion si la distancia entre ellos es menor a 1.5 mm 
+==============================================================================
+"""
+
+lim_amplitud = -0.0002
+# Buscando picos por encima de -0.0002
+picos, _ = find_peaks(envolvente_inferior, height = lim_amplitud)
+
+intersecciones_inferior=lambda_envolvente_inferior[picos]
+
+
+# Buscando picos por encima de -0.0002
+picos, _ = find_peaks(-envolvente_superior, height = lim_amplitud)
+intersecciones_superior = lambda_envolvente_superior[picos]
+
+"""
+# Lista para almacenar las intersecciones
+intersecciones = []
+
+# Tomaremos siempre el arreglo con menos puntos como el arreglo principal
+if(len(intersecciones_superior) < len(intersecciones_inferior)):
+    # Para cada punto del arreglo de intersecciones superior
+    for punto in intersecciones_superior:    
+        # calculamos la distancia a todos los puntos del arreglo de 
+        # intersecciones inferior
+        distancia = np.abs(punto - intersecciones_inferior)
+        # Buscamos los indices de los puntos cuya distancia sea 
+        index =np.where(distancia < 1.8)
+        # Primero verificamos si el arreglo index no esta vacio 
+        if(np.size(index)):
+            # Si no esta vacio se realiza el promedio entre los dos puntos
+            interseccion = 0.5*(punto + intersecciones_inferior[int(index[0])])
+            intersecciones.append(interseccion)
+            
+elif(len(intersecciones_superior) > len(intersecciones_inferior)):
+   for punto in intersecciones_inferior:    
+        distancia = np.abs(punto - intersecciones_superior)
+        index =np.where(distancia < 1.8)
+        if(np.size(index)):
+            interseccion = 0.5*(punto + intersecciones_superior[int(index[0])])
+            intersecciones.append(interseccion)
+    
+else: 
+    for punto in intersecciones_superior:    
+        distancia = np.abs(punto - intersecciones_inferior)
+        index =np.where(distancia < 1.8)
+        if(np.size(index)):
+            interseccion = 0.5*(punto + intersecciones_inferior[int(index[0])])
+            intersecciones.append(interseccion)
+
+# Convirtiendo a array numpy
+np.array(intersecciones)
+"""    
+    
+"""
+==============================================================================
+Graficando resultados
+==============================================================================
+"""
+
+# Creando figura
+fig,ax = plt.subplots(figsize=(40,20))
+# Pone lo mas juntas las graficas posibles
+fig.set_tight_layout(True)
+# Para que no se empalmen los titulos en los ejes
+fig.subplots_adjust(wspace=1.2)
+
+# Cambiando el tamano de la fuente en todos los ejes
+plt.rcParams.update({'font.size': 20})
+
+# Graficando el espectro optico inicial
+ax = plt.subplot(2,2,1)
+espectro_graph, = ax.plot(lambda_,potencia, linewidth=1.5, 
+                          label= "Medición")
+ax.set_xlabel(xlabel=r"$\lambda [nm]$", fontsize=30)
+ax.set_ylabel(ylabel=r"$[u.a]$", fontsize=30)
+ax.set_title(label="Dominio óptico", fontsize=30)
+#ax.set_ylim([-40,-10])
+ax.legend(loc="best",fontsize=30)
+
+
+
+# Graficando espectro filtrado
+ax = plt.subplot(2,2,2)
+espectro_graph, = ax.plot(lambda_,senal_filtrada, linewidth=1.5,color="purple",
+                          label="Señal filtrada")
+ax.set_xlabel(xlabel=r"$\lambda [nm]$", fontsize=30)
+ax.set_ylabel(ylabel=r"$[u.a]$", fontsize=30)
+ax.set_title(label="Dominio óptico", fontsize=30)
+ax.legend(loc="best")
+#ax.set_xlim([lim_inf_,lim_sup_])
+#ax.set_ylim([0,1])
+
+
+
+# Graficando envolvente superior
+ax = plt.subplot(2,2,3)
+espectro_graph = ax.scatter(lambda_envolvente_superior, envolvente_superior, 
+                             s=150, c="red", label="Envolvente")
+ax.set_xlabel(xlabel=r"$\lambda [nm]$", fontsize=30)
+ax.set_ylabel(ylabel=r"$[u.a]$", fontsize=30)
+ax.set_title(label="Envolvente Superior", fontsize=30)
+ax.legend(loc="best")
+#ax.set_xlim([lim_inf_,lim_sup_])
+#ax.set_ylim([0,1])
+
+
+indices_senal_a_seguir = np.where(envolvente_superior<0.08)
+senal_a_seguir = envolvente_superior[indices_senal_a_seguir]
+lambda_senal_a_seguir = lambda_envolvente_superior[indices_senal_a_seguir] 
+
+# Graficando envolvente superior recortada
+ax = plt.subplot(2,2,4)
+espectro_graph = ax.scatter(lambda_senal_a_seguir,senal_a_seguir, 
+                             s=150, c="black", label="Envolvente a seguir")
+ax.set_xlabel(xlabel=r"$\lambda [nm]$", fontsize=30)
+ax.set_ylabel(ylabel=r"$[u.a]$", fontsize=30)
+ax.set_title(label="Envolvente Inferior", fontsize=30)
+ax.legend(loc="best")
+#ax.set_xlim([lim_inf_,lim_sup_])
+#ax.set_ylim([0,1])
+
+
+
+"""
+#Creando caja de texto para mostrar los resultados en la imagen
+
+# Concatenando las intersecciones
+text = ""
+for interseccion in intersecciones: 
+    text += "\nInterseccion en: %.3f mm" % interseccion
+# Eliminando el espacio en blanco inicial
+text = text[1:]
+
+# Creando cadena para caja de texto
+textstr = text 
+
+# Estas son propiedades de matplotlib.patch.Patch
+props = dict(boxstyle='round', facecolor='teal', alpha=0.5)
+
+graph_text = ax.text(0.5, 0.15, textstr, transform=ax.transAxes, fontsize=35,
+        verticalalignment='top', bbox=props)
+"""
+# Guardando figura
+plt.savefig(carpeta + "-" + nombre_archivo + ".png")
+# Mostrando Figura
+plt.show()
