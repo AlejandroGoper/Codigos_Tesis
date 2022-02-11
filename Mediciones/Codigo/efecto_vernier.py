@@ -49,19 +49,15 @@ lambda_, potencia_dBm = data[:,0], data[:,1]
 
 """
 ==============================================================================
-Cambiando todo a escala lineal y realizando la resta de las señales
+Normalizando respecto a la referencia
 ==============================================================================
 """
 
-potencia_ref = 10**(potencia_dBm_ref/10)
-
-potencia_ = 10**(potencia_dBm/10)
-
-
-# Restando ambas señales
+# Normalizando
 
 potencia_dB = potencia_dBm  - potencia_dBm_ref
 
+# Cambiando a escala lineal
 potencia = 10**(potencia_dB/10)
 
 """
@@ -116,21 +112,52 @@ senal_filtrada = filtro.filtrar_por_ventana_de_gauss(sigma=0.2)
 Encontrando las envolventes superior e inferior 
 ==============================================================================
 """
+
 lim_amplitud = senal_filtrada.min()
-# Buscando picos por encima de 0
+# Buscando picos por encima del valor minimo
 picos, _ = find_peaks(senal_filtrada, height = lim_amplitud)
 
 envolvente_superior = senal_filtrada[picos]
 lambda_envolvente_superior = lambda_[picos]
+
 
 # Para encontrar los minimos multiplicamos la senal original por -1
 senal_invertida = - senal_filtrada
 lim_amplitud = senal_invertida.min()
 picos, _ = find_peaks(senal_invertida,height= lim_amplitud)
 
+
 envolvente_inferior = senal_filtrada[picos]
 lambda_envolvente_inferior = lambda_[picos]
 
+
+
+
+"""
+==============================================================================
+Empiricamente se descubrio que la envolvente superior era la unica rastrable 
+y que habia un patron bien definido en el rango [0,0.08] asi que, debemos 
+aplicar el procedimiento de identificar de nuevo la envolvente para esta 
+señal
+==============================================================================
+"""
+
+indices_senal_a_seguir = np.where(envolvente_superior<0.08)
+senal_a_seguir = envolvente_superior[indices_senal_a_seguir]
+lambda_senal_a_seguir = lambda_envolvente_superior[indices_senal_a_seguir] 
+
+
+# Buscando la envolvente superior e inferior de la senal rastreable
+
+index_env_sup_senal_rastrable = np.where(senal_a_seguir > 0.045) 
+env_sup_senal_rastreable = senal_a_seguir[index_env_sup_senal_rastrable]
+lambda_env_sup_senal_rastreable = lambda_senal_a_seguir[index_env_sup_senal_rastrable]
+
+
+
+index_env_inf_senal_rastrable = np.where(senal_a_seguir < 0.045) 
+env_inf_senal_rastreable = senal_a_seguir[index_env_inf_senal_rastrable]
+lambda_env_inf_senal_rastreable = lambda_senal_a_seguir[index_env_inf_senal_rastrable]
 
 """
 ==============================================================================
@@ -144,18 +171,23 @@ puntos son interseccion si la distancia entre ellos es menor a 1.5 mm
 ==============================================================================
 """
 
-lim_amplitud = -0.0002
-# Buscando picos por encima de -0.0002
-picos, _ = find_peaks(envolvente_inferior, height = lim_amplitud)
+# Este parametro ha sido proporcionado empiricamente a partir de los espectros
+# para la envolvente inferior
+lim_amplitud = env_inf_senal_rastreable.min()
 
-intersecciones_inferior=lambda_envolvente_inferior[picos]
+# Buscando picos por encima de 0.0
+picos, _ = find_peaks(env_inf_senal_rastreable, height = lim_amplitud)
+
+intersecciones_inferior=lambda_env_inf_senal_rastreable[picos]
 
 
-# Buscando picos por encima de -0.0002
-picos, _ = find_peaks(-envolvente_superior, height = lim_amplitud)
-intersecciones_superior = lambda_envolvente_superior[picos]
+# Este parametros ha sido encontrado empiricamente
+lim_amplitud = -env_sup_senal_rastreable.max()
+# Buscando picos por encima de 0.045
+picos, _ = find_peaks(-env_sup_senal_rastreable, height = lim_amplitud)
+intersecciones_superior = lambda_env_sup_senal_rastreable[picos]
 
-"""
+
 # Lista para almacenar las intersecciones
 intersecciones = []
 
@@ -167,32 +199,54 @@ if(len(intersecciones_superior) < len(intersecciones_inferior)):
         # intersecciones inferior
         distancia = np.abs(punto - intersecciones_inferior)
         # Buscamos los indices de los puntos cuya distancia sea 
-        index =np.where(distancia < 1.8)
+        index =np.where(distancia < 15)
         # Primero verificamos si el arreglo index no esta vacio 
         if(np.size(index)):
-            # Si no esta vacio se realiza el promedio entre los dos puntos
-            interseccion = 0.5*(punto + intersecciones_inferior[int(index[0])])
+            # Si no esta vacio se realiza el promedio entre los puntos
+            
+            # Inciamos la sumatoria de los puntos
+            sumatoria = punto
+            # Encontramos los puntos cercanos al punto en cuestion 
+            puntos_cercanos = intersecciones_inferior[index]
+            # variable que controla el numero total de puntos
+            m = len(puntos_cercanos) + 1
+            # Realizamos la sumatoria de los puntos
+            for p in puntos_cercanos:
+                sumatoria += p
+            # La interseccion es el promedio de los puntos cercanos
+            interseccion = sumatoria/m
             intersecciones.append(interseccion)
             
 elif(len(intersecciones_superior) > len(intersecciones_inferior)):
    for punto in intersecciones_inferior:    
         distancia = np.abs(punto - intersecciones_superior)
-        index =np.where(distancia < 1.8)
+        index =np.where(distancia < 15)
         if(np.size(index)):
-            interseccion = 0.5*(punto + intersecciones_superior[int(index[0])])
+            sumatoria = punto
+            puntos_cercanos = intersecciones_superior[index]
+            m = len(puntos_cercanos) + 1
+            for p in puntos_cercanos:
+                sumatoria += p
+            interseccion = sumatoria / m 
             intersecciones.append(interseccion)
     
 else: 
     for punto in intersecciones_superior:    
         distancia = np.abs(punto - intersecciones_inferior)
-        index =np.where(distancia < 1.8)
+        index =np.where(distancia < 15)
         if(np.size(index)):
-            interseccion = 0.5*(punto + intersecciones_inferior[int(index[0])])
+            sumatoria = punto
+            puntos_cercanos = intersecciones_inferior[index]
+            m = len(puntos_cercanos) + 1
+            for p in puntos_cercanos:
+                sumatoria += p
+            
+            interseccion = sumatoria/m
             intersecciones.append(interseccion)
 
 # Convirtiendo a array numpy
 np.array(intersecciones)
-"""    
+    
     
 """
 ==============================================================================
@@ -237,7 +291,8 @@ ax.legend(loc="best")
 
 # Graficando envolvente superior
 ax = plt.subplot(2,2,3)
-espectro_graph = ax.scatter(lambda_envolvente_superior, envolvente_superior, 
+espectro_graph = ax.scatter(lambda_env_sup_senal_rastreable, 
+                            env_sup_senal_rastreable, 
                              s=150, c="red", label="Envolvente")
 ax.set_xlabel(xlabel=r"$\lambda [nm]$", fontsize=30)
 ax.set_ylabel(ylabel=r"$[u.a]$", fontsize=30)
@@ -247,14 +302,11 @@ ax.legend(loc="best")
 #ax.set_ylim([0,1])
 
 
-indices_senal_a_seguir = np.where(envolvente_superior<0.08)
-senal_a_seguir = envolvente_superior[indices_senal_a_seguir]
-lambda_senal_a_seguir = lambda_envolvente_superior[indices_senal_a_seguir] 
-
-# Graficando envolvente superior recortada
+# Graficando envolvente inferior
 ax = plt.subplot(2,2,4)
-espectro_graph = ax.scatter(lambda_senal_a_seguir,senal_a_seguir, 
-                             s=150, c="black", label="Envolvente a seguir")
+espectro_graph = ax.scatter(lambda_env_inf_senal_rastreable, 
+                            env_inf_senal_rastreable, 
+                            s=150, c="black", label="Envolvente a seguir")
 ax.set_xlabel(xlabel=r"$\lambda [nm]$", fontsize=30)
 ax.set_ylabel(ylabel=r"$[u.a]$", fontsize=30)
 ax.set_title(label="Envolvente Inferior", fontsize=30)
@@ -262,9 +314,6 @@ ax.legend(loc="best")
 #ax.set_xlim([lim_inf_,lim_sup_])
 #ax.set_ylim([0,1])
 
-
-
-"""
 #Creando caja de texto para mostrar los resultados en la imagen
 
 # Concatenando las intersecciones
@@ -282,7 +331,7 @@ props = dict(boxstyle='round', facecolor='teal', alpha=0.5)
 
 graph_text = ax.text(0.5, 0.15, textstr, transform=ax.transAxes, fontsize=35,
         verticalalignment='top', bbox=props)
-"""
+
 # Guardando figura
 plt.savefig(carpeta + "-" + nombre_archivo + ".png")
 # Mostrando Figura
