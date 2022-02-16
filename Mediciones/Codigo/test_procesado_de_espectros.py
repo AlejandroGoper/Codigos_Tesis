@@ -32,13 +32,15 @@ Importando Datos
 
 # Importando archivos 
 
-fecha_medicion = "14-02-2022"
+fecha_medicion = "16-02-2022"
 
 carpeta = "Caracterizacion_capilares"
 
-ruta_directorio = "../" + carpeta + "/" + fecha_medicion
+subcarpeta = "Capilar4"
 
-nombre_archivo = "Espectro1_Capilar2.txt"
+ruta_directorio = "../" + carpeta + "/" + fecha_medicion + "/" + subcarpeta
+
+nombre_archivo = "Espectro (10).txt"
 
 path = ruta_directorio + "/" + nombre_archivo
 
@@ -78,7 +80,7 @@ Definicion de parametros
 """
 # Definiendo limite de busqueda en el espectro de Fourier (OPL en milimetros)
 lim_inf = 0 # mm 
-lim_sup = 3.0 # mm
+lim_sup = 2.5 # mm
 
 
 #Periodo de muestreo = (lambda_[-1] - lambda_[0])/len(lambda_) Approx 0.005 nm
@@ -209,7 +211,7 @@ Aplicando tecnica WINDOWING:
 
 # Construyendo una ventana w_n del mismo tamaño que el array de la senal
 
-# w_n = ventana_de_gauss(orden=len(senal_filtrada_esc_lineal), sigma=0.1)
+w_n = ventana_de_gauss(orden=len(senal_filtrada_esc_lineal), sigma=0.05)
 # w_n = ventana_de_hanning(orden=len(senal_filtrada_esc_lineal))
 # w_n = ventana_flattop(orden=len(senal_filtrada_esc_lineal))
 
@@ -221,7 +223,7 @@ valores del parametro beta,  por ejemplo:
     - beta = 6 - Ventana de Hanning
     - beta = 8.6 - Ventana de Blackman - Harris
 """
-w_n = ventana_kaiser_bessel(orden=len(senal_filtrada_esc_lineal), beta=6)
+#w_n = ventana_kaiser_bessel(orden=len(senal_filtrada_esc_lineal), beta=6)
 # Enventanado de la senal en escala lineal
 senal_enventanada = senal_filtrada_esc_lineal * w_n
 
@@ -236,7 +238,7 @@ Mejoramiento de la resolucion en Fourier post-windowing
 # Mejorando la resolucion del espectro añadiendo 0 a los extremos del array
 
 # Numero de ceros a agregar en cada extremo
-n_zeros = 5000
+n_zeros = 10000
 """
 ******************************************************************************
 Empiricamente se ha determinado que cuando n_zeros > 10 000 entonces
@@ -308,7 +310,7 @@ amp_env_temp = amp_env[index_lim_inf:index_lim_sup]
 
 # Necesitamos definir un valor limite en altura en el grafico de la amplitud
 # se buscaran los maximos que superen este valor
-lim_amp = 0.2
+lim_amp = 0.02
 
 # Buscando maximos en la region limitada
 picos, _ = find_peaks(amp_env_temp, height = lim_amp)
@@ -403,6 +405,6 @@ ax.set_xlim([lim_inf_,lim_sup_])
 #ax.set_ylim([0,2])
 
 # Guardando figura
-plt.savefig("Filtro.png")
+plt.savefig(subcarpeta + "/" + nombre_archivo + ".png")
 # Mostrando Figura
 plt.show()
