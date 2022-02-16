@@ -32,21 +32,21 @@ Importando Datos
 
 # Importando archivos 
 
-fecha_medicion = "9-11-2021"
+fecha_medicion = "14-02-2022"
 
-carpeta = "2GAP-VIDRIO-AIRE-0.1um"
+carpeta = "Caracterizacion_capilares"
 
-ruta_directorio = "../" + fecha_medicion + "/" + carpeta
+ruta_directorio = "../" + carpeta + "/" + fecha_medicion
 
-nombre_archivo = "Espectro (12).txt"
+nombre_archivo = "Espectro1_Capilar2.txt"
 
 path = ruta_directorio + "/" + nombre_archivo
 
-data = np.loadtxt(path, skiprows=0)
+data = np.loadtxt(path, skiprows=58)
 
-path = ruta_directorio + "/referencia.txt"
+path = ruta_directorio + "/Referencia.txt"
 
-referencia = np.loadtxt(path)
+referencia = np.loadtxt(path, skiprows=58)
 
 
 """
@@ -58,13 +58,13 @@ Formateando y normalizando datos del espectro respecto a la referencia
 
 lambda_ref, potencia_dBm_ref = referencia[:,0], referencia[:,1]
 
-potencia_dBm_ref = 10**(potencia_dBm_ref/10)
+#potencia_dBm_ref = 10**(potencia_dBm_ref/10)
 
 # Separando datos por columnas
-lambda_ = data[:,0]
+lambda_, potencia_dBm = data[:,0], data[:,1]
 
 
-potencia_dBm = 10**(data[:,1]/10)
+#potencia_dBm = 10**(data[:,1]/10)
 
 
 # Normalizando respecto a la referencia
@@ -78,7 +78,7 @@ Definicion de parametros
 """
 # Definiendo limite de busqueda en el espectro de Fourier (OPL en milimetros)
 lim_inf = 0 # mm 
-lim_sup = 2.0 # mm
+lim_sup = 3.0 # mm
 
 
 #Periodo de muestreo = (lambda_[-1] - lambda_[0])/len(lambda_) Approx 0.005 nm
@@ -197,7 +197,7 @@ Cambiando la señal filtrada a escala Lineal
 
 # Cambiando a escala lineal
 
-senal_filtrada_esc_lineal = senal_filtrada #10**(senal_filtrada/10)
+senal_filtrada_esc_lineal = 10**(senal_filtrada/10)
 
 """
 ==============================================================================
@@ -221,7 +221,7 @@ valores del parametro beta,  por ejemplo:
     - beta = 6 - Ventana de Hanning
     - beta = 8.6 - Ventana de Blackman - Harris
 """
-w_n = ventana_kaiser_bessel(orden=len(senal_filtrada_esc_lineal), beta=0)
+w_n = ventana_kaiser_bessel(orden=len(senal_filtrada_esc_lineal), beta=6)
 # Enventanado de la senal en escala lineal
 senal_enventanada = senal_filtrada_esc_lineal * w_n
 
@@ -236,7 +236,7 @@ Mejoramiento de la resolucion en Fourier post-windowing
 # Mejorando la resolucion del espectro añadiendo 0 a los extremos del array
 
 # Numero de ceros a agregar en cada extremo
-n_zeros = 0
+n_zeros = 5000
 """
 ******************************************************************************
 Empiricamente se ha determinado que cuando n_zeros > 10 000 entonces
@@ -281,7 +281,7 @@ Eliminando componente de DC a la señal mejorada
 """
 
 # Eliminando la componenete de DC hasta un margen fijo en el opl
-dc_margen = 0.0  # mm
+dc_margen = 0.2  # mm
 
 # buscamos el indice en el array opl mas cercano a dc_margen
 nn.fit(opl_env.reshape((len(opl_env),1)))
@@ -308,7 +308,7 @@ amp_env_temp = amp_env[index_lim_inf:index_lim_sup]
 
 # Necesitamos definir un valor limite en altura en el grafico de la amplitud
 # se buscaran los maximos que superen este valor
-lim_amp = 5
+lim_amp = 0.2
 
 # Buscando maximos en la region limitada
 picos, _ = find_peaks(amp_env_temp, height = lim_amp)
