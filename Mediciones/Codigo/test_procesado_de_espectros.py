@@ -34,13 +34,13 @@ Importando Datos
 
 fecha_medicion = "16-02-2022"
 
-carpeta = "Caracterizacion_capilares"
+carpeta = "Capilar4_Agua_Aire"
 
 subcarpeta = "Capilar4"
 
-ruta_directorio = "../" + carpeta + "/" + fecha_medicion + "/" + subcarpeta
+ruta_directorio = "../" + fecha_medicion + "/" + carpeta
 
-nombre_archivo = "Espectro (10).txt"
+nombre_archivo = "Espectro (8).txt"
 
 path = ruta_directorio + "/" + nombre_archivo
 
@@ -80,7 +80,7 @@ Definicion de parametros
 """
 # Definiendo limite de busqueda en el espectro de Fourier (OPL en milimetros)
 lim_inf = 0 # mm 
-lim_sup = 2.5 # mm
+lim_sup = 4 # mm
 
 
 #Periodo de muestreo = (lambda_[-1] - lambda_[0])/len(lambda_) Approx 0.005 nm
@@ -405,6 +405,6 @@ ax.set_xlim([lim_inf_,lim_sup_])
 #ax.set_ylim([0,2])
 
 # Guardando figura
-plt.savefig(subcarpeta + "/" + nombre_archivo + ".png")
+plt.savefig(subcarpeta + "/" + nombre_archivo + "_test.png")
 # Mostrando Figura
 plt.show()
