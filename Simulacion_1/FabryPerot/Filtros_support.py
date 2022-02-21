@@ -17,11 +17,12 @@ Referencias:
     [5] https://www.youtube.com/watch?v=QWUOBlAABQU
     [6] https://community.sw.siemens.com/s/article/window-types-hanning-flattop-uniform-tukey-and-exponential
     [7] https://download.ni.com/evaluation/pxi/Understanding%20FFTs%20and%20Windowing.pdf
-
+    [8] https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.windows.kaiser.html
 """
 
 from numpy import pi, arange, sin, exp, cos, convolve
 from scipy.signal import filtfilt
+from scipy.signal.windows import kaiser
 
 """
     ==========================================================================
@@ -75,6 +76,20 @@ def ventana_flattop(orden):
           - a_3*cos(6*pi*n/M) + a_4*cos(8*pi*n/M) )
     w_n += a_0
     return w_n
+
+
+"""
+    ==========================================================================
+    Este metodo construye una ventana Kaiser-Bessel centrada en (N-1)/2 
+    muestras donde N es el orden del filtro (importante que N sea impar)
+    
+    Vease referencia [8]
+    ==========================================================================
+"""
+def ventana_kaiser_bessel(orden,beta):
+    w_n = kaiser(M=orden, beta=beta)
+    return w_n
+
 """
 
 Definicion de la clase principal para la aplicacion de filtros
