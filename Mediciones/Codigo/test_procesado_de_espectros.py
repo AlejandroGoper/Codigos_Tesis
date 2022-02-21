@@ -32,17 +32,17 @@ Importando Datos
 
 # Importando archivos 
 
-fecha_medicion = "16-02-2022"
+fecha_medicion = "18-02-2022"
 
-carpeta = "Capilar4_Agua_Aire"
+carpeta = "Capilar2_aire_agua_10um_dentro"
 
-subcarpeta = "Capilar4"
+subcarpeta = "Capilar2"
 
 ruta_directorio = "../" + fecha_medicion + "/" + carpeta
 
-nombre_archivo = "Espectro (8).txt"
+nombre_archivo = "Espectro (116)"
 
-path = ruta_directorio + "/" + nombre_archivo
+path = ruta_directorio + "/" + nombre_archivo + ".txt"
 
 data = np.loadtxt(path, skiprows=58)
 
@@ -211,8 +211,8 @@ Aplicando tecnica WINDOWING:
 
 # Construyendo una ventana w_n del mismo tamaño que el array de la senal
 
-w_n = ventana_de_gauss(orden=len(senal_filtrada_esc_lineal), sigma=0.05)
-# w_n = ventana_de_hanning(orden=len(senal_filtrada_esc_lineal))
+#w_n = ventana_de_gauss(orden=len(senal_filtrada_esc_lineal), sigma=0.05)
+w_n = ventana_de_hanning(orden=len(senal_filtrada_esc_lineal))
 # w_n = ventana_flattop(orden=len(senal_filtrada_esc_lineal))
 
 """
@@ -283,7 +283,7 @@ Eliminando componente de DC a la señal mejorada
 """
 
 # Eliminando la componenete de DC hasta un margen fijo en el opl
-dc_margen = 0.2  # mm
+dc_margen = 0.2 # mm
 
 # buscamos el indice en el array opl mas cercano a dc_margen
 nn.fit(opl_env.reshape((len(opl_env),1)))
@@ -310,7 +310,7 @@ amp_env_temp = amp_env[index_lim_inf:index_lim_sup]
 
 # Necesitamos definir un valor limite en altura en el grafico de la amplitud
 # se buscaran los maximos que superen este valor
-lim_amp = 0.02
+lim_amp = 0.002
 
 # Buscando maximos en la region limitada
 picos, _ = find_peaks(amp_env_temp, height = lim_amp)
