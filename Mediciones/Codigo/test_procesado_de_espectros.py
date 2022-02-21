@@ -40,7 +40,7 @@ subcarpeta = "Capilar2"
 
 ruta_directorio = "../" + fecha_medicion + "/" + carpeta
 
-nombre_archivo = "Espectro (116)"
+nombre_archivo = "Espectro (100)"
 
 path = ruta_directorio + "/" + nombre_archivo + ".txt"
 
@@ -80,7 +80,7 @@ Definicion de parametros
 """
 # Definiendo limite de busqueda en el espectro de Fourier (OPL en milimetros)
 lim_inf = 0 # mm 
-lim_sup = 4 # mm
+lim_sup = 6 # mm
 
 
 #Periodo de muestreo = (lambda_[-1] - lambda_[0])/len(lambda_) Approx 0.005 nm
@@ -191,6 +191,11 @@ opl_filt,amp_filt = encontrar_FFT_dominio_en_OPL(lambda_inicial=lambda_inicial,
                                                  lambda_final=lambda_final, 
                                                   senal=senal_filtrada)
 
+
+
+
+
+
 """
 ==============================================================================
 Cambiando la señal filtrada a escala Lineal
@@ -211,8 +216,8 @@ Aplicando tecnica WINDOWING:
 
 # Construyendo una ventana w_n del mismo tamaño que el array de la senal
 
-#w_n = ventana_de_gauss(orden=len(senal_filtrada_esc_lineal), sigma=0.05)
-w_n = ventana_de_hanning(orden=len(senal_filtrada_esc_lineal))
+w_n = ventana_de_gauss(orden=len(senal_filtrada_esc_lineal), sigma=0.05)
+#w_n = ventana_de_hanning(orden=len(senal_filtrada_esc_lineal))
 # w_n = ventana_flattop(orden=len(senal_filtrada_esc_lineal))
 
 """
@@ -283,7 +288,7 @@ Eliminando componente de DC a la señal mejorada
 """
 
 # Eliminando la componenete de DC hasta un margen fijo en el opl
-dc_margen = 0.2 # mm
+dc_margen = 0.3 # mm
 
 # buscamos el indice en el array opl mas cercano a dc_margen
 nn.fit(opl_env.reshape((len(opl_env),1)))
