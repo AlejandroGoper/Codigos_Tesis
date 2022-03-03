@@ -216,8 +216,8 @@ Aplicando tecnica WINDOWING:
 
 # Construyendo una ventana w_n del mismo tamaño que el array de la senal
 
-w_n = ventana_de_gauss(orden=len(senal_filtrada_esc_lineal), sigma=0.05)
-#w_n = ventana_de_hanning(orden=len(senal_filtrada_esc_lineal))
+# w_n = ventana_de_gauss(orden=len(senal_filtrada_esc_lineal), sigma=0.08)
+w_n = ventana_de_hanning(orden=len(senal_filtrada_esc_lineal))
 # w_n = ventana_flattop(orden=len(senal_filtrada_esc_lineal))
 
 """
@@ -228,7 +228,7 @@ valores del parametro beta,  por ejemplo:
     - beta = 6 - Ventana de Hanning
     - beta = 8.6 - Ventana de Blackman - Harris
 """
-#w_n = ventana_kaiser_bessel(orden=len(senal_filtrada_esc_lineal), beta=6)
+# w_n = ventana_kaiser_bessel(orden=len(senal_filtrada_esc_lineal), beta=6)
 # Enventanado de la senal en escala lineal
 senal_enventanada = senal_filtrada_esc_lineal * w_n
 
