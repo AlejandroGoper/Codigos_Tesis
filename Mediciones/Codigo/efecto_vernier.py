@@ -20,25 +20,25 @@ Importando Datos
 ==============================================================================
 """
 
-# Importando un espectro del fabry perot: 2GAP-VIDRIO-AIRE-0.1um
-
 # Importando archivos 
 
-fecha_medicion = "1-2-2022"
+#fecha_medicion = "1-2-2022"
 
-carpeta = "3GAP-CAPILAR-AIRE-FIBRA-AIRE-100nm"
+#carpeta = "3GAP-CAPILAR-AIRE-FIBRA-AIRE-100nm"
 
-ruta_directorio = "../" + fecha_medicion + "/" + carpeta
+# ruta_directorio = "../" + fecha_medicion + "/" + carpeta
+
+ruta_directorio = "../" + "Mediciones_Monse" + "/" + "4xLcav" + "/" 
 
 nombre_archivo = "Espectro (1).txt"
 
 path = ruta_directorio + "/" + nombre_archivo
 
-data = np.loadtxt(path, skiprows=0)
+data = np.loadtxt(path, skiprows=58)
 
-path = ruta_directorio + "/referencia.txt"
+path = ruta_directorio + "/Referencia.txt"
 
-referencia = np.loadtxt(path)
+referencia = np.loadtxt(path, skiprows = 58)
 
 # Separando datos de la referencia por columnas
 
@@ -136,28 +136,36 @@ lambda_envolvente_inferior = lambda_[picos]
 """
 ==============================================================================
 Empiricamente se descubrio que la envolvente superior era la unica rastrable 
-y que habia un patron bien definido en el rango [0,0.08] asi que, debemos 
+y que habia un patron bien definido en el rango [1,3] asi que, debemos 
 aplicar el procedimiento de identificar de nuevo la envolvente para esta 
 señal
 ==============================================================================
 """
 
-indices_senal_a_seguir = np.where(envolvente_superior<0.08)
-senal_a_seguir = envolvente_superior[indices_senal_a_seguir]
-lambda_senal_a_seguir = lambda_envolvente_superior[indices_senal_a_seguir] 
+lim_inferior = 0.1
+lim_superior = 0.5
+
+prom = (lim_inferior + lim_superior)/2
+
+indices_senal_a_seguir = np.where((envolvente_inferior<lim_superior) & 
+                                  (envolvente_inferior >= lim_inferior))
+senal_a_seguir = envolvente_inferior[indices_senal_a_seguir]
+lambda_senal_a_seguir = lambda_envolvente_inferior[indices_senal_a_seguir] 
 
 
 # Buscando la envolvente superior e inferior de la senal rastreable
+# este debe ser aproximadamente el punto medio del rango de busqueda
 
-index_env_sup_senal_rastrable = np.where(senal_a_seguir > 0.045) 
+index_env_sup_senal_rastrable = np.where(senal_a_seguir >= prom) 
 env_sup_senal_rastreable = senal_a_seguir[index_env_sup_senal_rastrable]
 lambda_env_sup_senal_rastreable = lambda_senal_a_seguir[index_env_sup_senal_rastrable]
 
 
 
-index_env_inf_senal_rastrable = np.where(senal_a_seguir < 0.045) 
+index_env_inf_senal_rastrable = np.where(senal_a_seguir < prom) 
 env_inf_senal_rastreable = senal_a_seguir[index_env_inf_senal_rastrable]
 lambda_env_inf_senal_rastreable = lambda_senal_a_seguir[index_env_inf_senal_rastrable]
+
 
 """
 ==============================================================================
@@ -167,7 +175,7 @@ Encontrando los puntos de interseccion:
     
 * Para relacionar los maximos con los minimos correspondientes se realiza la 
 la comparacion punto a punto entre la envolvente inferior y superior, ambos
-puntos son interseccion si la distancia entre ellos es menor a 1.5 mm 
+puntos son interseccion si la distancia entre ellos es menor a tol en nm 
 ==============================================================================
 """
 
@@ -175,7 +183,7 @@ puntos son interseccion si la distancia entre ellos es menor a 1.5 mm
 # para la envolvente inferior
 lim_amplitud = env_inf_senal_rastreable.min()
 
-# Buscando picos por encima de 0.0
+# Buscando picos por encima del valor minimo de la señal
 picos, _ = find_peaks(env_inf_senal_rastreable, height = lim_amplitud)
 
 intersecciones_inferior=lambda_env_inf_senal_rastreable[picos]
@@ -191,6 +199,9 @@ intersecciones_superior = lambda_env_sup_senal_rastreable[picos]
 # Lista para almacenar las intersecciones
 intersecciones = []
 
+# Tolerancia en lambda
+tol = 10 #nm
+
 # Tomaremos siempre el arreglo con menos puntos como el arreglo principal
 if(len(intersecciones_superior) < len(intersecciones_inferior)):
     # Para cada punto del arreglo de intersecciones superior
@@ -199,7 +210,7 @@ if(len(intersecciones_superior) < len(intersecciones_inferior)):
         # intersecciones inferior
         distancia = np.abs(punto - intersecciones_inferior)
         # Buscamos los indices de los puntos cuya distancia sea 
-        index =np.where(distancia < 15)
+        index =np.where(distancia < tol)
         # Primero verificamos si el arreglo index no esta vacio 
         if(np.size(index)):
             # Si no esta vacio se realiza el promedio entre los puntos
@@ -220,7 +231,7 @@ if(len(intersecciones_superior) < len(intersecciones_inferior)):
 elif(len(intersecciones_superior) > len(intersecciones_inferior)):
    for punto in intersecciones_inferior:    
         distancia = np.abs(punto - intersecciones_superior)
-        index =np.where(distancia < 15)
+        index =np.where(distancia < tol)
         if(np.size(index)):
             sumatoria = punto
             puntos_cercanos = intersecciones_superior[index]
@@ -233,7 +244,7 @@ elif(len(intersecciones_superior) > len(intersecciones_inferior)):
 else: 
     for punto in intersecciones_superior:    
         distancia = np.abs(punto - intersecciones_inferior)
-        index =np.where(distancia < 15)
+        index =np.where(distancia < tol)
         if(np.size(index)):
             sumatoria = punto
             puntos_cercanos = intersecciones_inferior[index]
@@ -247,7 +258,7 @@ else:
 # Convirtiendo a array numpy
 np.array(intersecciones)
     
-    
+
 """
 ==============================================================================
 Graficando resultados
@@ -280,6 +291,12 @@ ax.legend(loc="best",fontsize=30)
 ax = plt.subplot(2,2,2)
 espectro_graph, = ax.plot(lambda_,senal_filtrada, linewidth=1.5,color="purple",
                           label="Señal filtrada")
+ax.scatter(lambda_env_sup_senal_rastreable, 
+                            env_sup_senal_rastreable, 
+                             s=150, c="red", label="Envolvente")
+ax.scatter(lambda_env_inf_senal_rastreable, 
+                            env_inf_senal_rastreable, 
+                            s=150, c="red")
 ax.set_xlabel(xlabel=r"$\lambda [nm]$", fontsize=30)
 ax.set_ylabel(ylabel=r"$[u.a]$", fontsize=30)
 ax.set_title(label="Dominio óptico", fontsize=30)
@@ -288,7 +305,7 @@ ax.legend(loc="best")
 #ax.set_ylim([0,1])
 
 
-
+"""
 # Graficando envolvente superior
 ax = plt.subplot(2,2,3)
 espectro_graph = ax.scatter(lambda_env_sup_senal_rastreable, 
@@ -314,7 +331,37 @@ ax.legend(loc="best")
 #ax.set_xlim([lim_inf_,lim_sup_])
 #ax.set_ylim([0,1])
 
+"""
+
+# Graficando envolvente superior
+ax = plt.subplot(2,2,3)
+espectro_graph = ax.scatter(lambda_envolvente_superior, 
+                            envolvente_superior, 
+                             s=150, c="red", label="Envolvente")
+ax.set_xlabel(xlabel=r"$\lambda [nm]$", fontsize=30)
+ax.set_ylabel(ylabel=r"$[u.a]$", fontsize=30)
+ax.set_title(label="Envolvente Superior", fontsize=30)
+ax.legend(loc="best")
+#ax.set_xlim([lim_inf_,lim_sup_])
+#ax.set_ylim([0,1])
+
+
+# Graficando envolvente inferior
+ax = plt.subplot(2,2,4)
+espectro_graph = ax.scatter(lambda_envolvente_inferior, 
+                            envolvente_inferior, 
+                            s=150, c="black", label="Envolvente a seguir")
+ax.set_xlabel(xlabel=r"$\lambda [nm]$", fontsize=30)
+ax.set_ylabel(ylabel=r"$[u.a]$", fontsize=30)
+ax.set_title(label="Envolvente Inferior", fontsize=30)
+ax.legend(loc="best")
+#ax.set_xlim([lim_inf_,lim_sup_])
+#ax.set_ylim([0,1])
+
+
+
 #Creando caja de texto para mostrar los resultados en la imagen
+
 
 # Concatenando las intersecciones
 text = ""
@@ -327,12 +374,29 @@ text = text[1:]
 textstr = text 
 
 # Estas son propiedades de matplotlib.patch.Patch
-props = dict(boxstyle='round', facecolor='teal', alpha=0.5)
+props = dict(boxstyle='round', facecolor='lightgray', alpha=0.8)
 
-graph_text = ax.text(0.5, 0.15, textstr, transform=ax.transAxes, fontsize=35,
-        verticalalignment='top', bbox=props)
+graph_text = ax.text(0.05, 0.25, textstr, transform=ax.transAxes, fontsize=35,
+        verticalalignment='top', bbox=props, color="black")
 
 # Guardando figura
-plt.savefig(carpeta + "-" + nombre_archivo + ".png")
+
+plt.savefig(ruta_directorio + "-" + nombre_archivo + ".png")
 # Mostrando Figura
+
 plt.show()
+
+"""
+Guardando datos de las envolventes superior e inferior.
+"""
+
+
+x_ = lambda_env_sup_senal_rastreable.reshape(len(lambda_env_sup_senal_rastreable),1)
+xy = np.append(x_, env_sup_senal_rastreable.reshape(len(env_sup_senal_rastreable),1), axis=1)
+
+np.savetxt(ruta_directorio + "/" + "Envolvente_superior_" + nombre_archivo, xy, fmt="%f" , header="Lambda, Potencia_escala_lineal", delimiter = ",")
+
+x = lambda_env_inf_senal_rastreable.reshape(len(lambda_env_inf_senal_rastreable),1)
+xy = np.append(x, env_inf_senal_rastreable.reshape(len(env_inf_senal_rastreable),1), axis=1)
+
+np.savetxt(ruta_directorio + "/" + "Envolvente_inferior_" + nombre_archivo, xy, fmt="%f" , header="Lambda, Potencia_escala_lineal", delimiter = ",")
