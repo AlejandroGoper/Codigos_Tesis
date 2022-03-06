@@ -28,23 +28,23 @@ Importando Datos
 ==============================================================================
 """
 
-# Importando un espectro del fabry perot: 2GAP-VIDRIO-AIRE-100um - ESPECTRO (5)
+# Importando un espectro
 
 # Importando archivos 
 
-fecha_medicion = "18-02-2022"
+fecha_medicion = "01-03-2022"
 
-carpeta = "Capilar2_aire_agua_10um_dentro"
+carpeta = "Medicion iguales"
 
-subcarpeta = "Capilar2"
+#subcarpeta = "Capilar2"
 
 ruta_directorio = "../" + fecha_medicion + "/" + carpeta
 
-nombre_archivo = "Espectro (100)"
+nombre_archivo = "Espectro (1)"
 
 path = ruta_directorio + "/" + nombre_archivo + ".txt"
 
-data = np.loadtxt(path, skiprows=58)
+data = np.loadtxt(path, skiprows=0)
 
 path = ruta_directorio + "/Referencia.txt"
 
@@ -71,7 +71,7 @@ lambda_, potencia_dBm = data[:,0], data[:,1]
 
 # Normalizando respecto a la referencia
 
-potencia_dB = potencia_dBm  - potencia_dBm_ref
+potencia_dB = potencia_dBm  - (potencia_dBm_ref + 10*np.log10(25))
 
 """
 ==============================================================================
@@ -410,6 +410,6 @@ ax.set_xlim([lim_inf_,lim_sup_])
 #ax.set_ylim([0,2])
 
 # Guardando figura
-plt.savefig(subcarpeta + "/" + nombre_archivo + "_test.png")
+plt.savefig(ruta_directorio + "/" + nombre_archivo + "_test.png")
 # Mostrando Figura
 plt.show()
