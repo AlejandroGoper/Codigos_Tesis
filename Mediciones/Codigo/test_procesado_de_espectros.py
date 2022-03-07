@@ -36,7 +36,7 @@ Importando Datos:
 
 
 # Definiendo ruta a la carpeta de las mediciones 
-ruta_directorio = "../" + "Mediciones_Monse" + "/" + "1xLcav" + "/" 
+ruta_directorio = "../" + "01-03-2022" + "/" + "Medicion muy cercas" + "/" 
 
 
 # Con esta instucción encontramos una lista de todos los archivos .dat en el 
@@ -71,25 +71,13 @@ for archivo in lista:
 
         """
         ======================================================================
-        Cambiando a escala Lineal:
-            La normalizacion se hace escalando la referencia por un factor que
-            hace que el 4% de refleccion obtenido en el espectro, sea, ahora,
-            considerado como el 100%, por lo tanto debemos dividir la potencia
-            en escala lineal por un factor de 25.
-        ======================================================================
-        """     
-        potencia = 10**(potencia_dB/10) 
-        potencia /= 25
-
-        """
-        ======================================================================
         Definicion de parametros
         ======================================================================
         """
         # Definiendo limite de busqueda en el espectro de Fourier 
         # (OPL en milimetros)
         lim_inf = 0 # mm 
-        lim_sup = 6 # mm
+        lim_sup = 10 # mm
         #Periodo de muestreo = (lambda_[-1] - lambda_[0])/len(lambda_) Approx 0.005 nm
         lambda_inicial = lambda_[0] # Valor inicial del arreglo
         lambda_final = lambda_[-1] # Valor final del arreglo
@@ -186,7 +174,6 @@ for archivo in lista:
 
         # Filtrando por el metodo de las ventanas
         senal_filtrada = filtro.filtrar_por_ventana_de_gauss(sigma=0.2)
-
         """
         ======================================================================
         Aplicando FFT a la señal filtrada
@@ -207,15 +194,19 @@ for archivo in lista:
         Cambiando la señal filtrada a escala Lineal
         ======================================================================
         """
-
+        
+        """
+        **********************************************************************
+         La normalizacion se hace escalando la referencia por un factor que
+         hace que el 4% de refleccion obtenido en el espectro, sea, ahora,
+         considerado como el 100%, por lo tanto debemos dividir la potencia
+         en escala lineal por un factor de 25.
+        **********************************************************************
+        """
         # Cambiando a escala lineal
 
         senal_filtrada_esc_lineal = 10**(senal_filtrada/10)
-
-        # Ajustando senal para que la normalizacion con respecto a la referencia (4%)
-        # sea considerado el 100% 
-
-        #senal_filtrada_esc_lineal /= 25
+        senal_filtrada_esc_lineal /= 25
 
         """
         ======================================================================
@@ -304,7 +295,7 @@ for archivo in lista:
         """
 
         # Eliminando la componenete de DC hasta un margen fijo en el opl
-        dc_margen = 0.3 # mm
+        dc_margen = 0.1 # mm
 
         # buscamos el indice en el array opl mas cercano a dc_margen
         nn.fit(opl_env.reshape((len(opl_env),1)))
@@ -370,7 +361,7 @@ for archivo in lista:
         # Graficando el espectro optico inicial
         ax = plt.subplot(4,2,1)
         espectro_graph, = ax.plot(lambda_,potencia_dB, linewidth=1.5, 
-                                  label= "Medición")
+                                  label= "Medición Normalizada")
         ax.set_xlabel(xlabel=r"$\lambda [nm]$", fontsize=30)
         ax.set_ylabel(ylabel=r"$dB$", fontsize=30)
         ax.set_title(label="Dominio óptico", fontsize=30)
