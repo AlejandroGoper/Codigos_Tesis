@@ -27,7 +27,7 @@ Importando Datos:
 # Importando archivos 
 
 
-ruta_directorio = "../" + "Mediciones_Monse" + "/" + "4xLcav" + "/" 
+ruta_directorio = "../" + "Mediciones_Monse" + "/" + "1xLcav" + "/" 
 
 
 # Con esta instucción encontramos una lista de todos los archivos txt en el 
@@ -51,17 +51,22 @@ for archivo in lista:
 
         """
         ======================================================================
-        Normalizando respecto a la referencia en escala Logaritmica
+        Normalizando respecto a la referencia en escala Logaritmica 
         ======================================================================
         """    
         potencia_dB = potencia_dBm  - potencia_dBm_ref
 
         """
         ======================================================================
-        Cambiando a escala Lineal
+        Cambiando a escala Lineal:
+            La normalizacion se hace escalando la referencia por un factor que
+            hace que el 4% de refleccion obtenido en el espectro, sea, ahora,
+            considerado como el 100%, por lo tanto debemos dividir la potencia
+            en escala lineal por un factor de 25.
         ======================================================================
         """     
-        potencia = 10**(potencia_dB/10)
+        potencia = 10**(potencia_dB/10) 
+        potencia /= 25
 
         """
         ======================================================================
@@ -150,16 +155,16 @@ for archivo in lista:
         ==============================================================================
         """
 
-        lim_inferior = 0.1  # [u.a]
-        lim_superior = 0.5  # [u.a]
+        lim_inferior = 0.035 # [u.a]
+        lim_superior = 0.075 # [u.a]
         # Umbral para dividir la señal en dos (superior e inferior)
         prom = (lim_inferior + lim_superior)/2
 
         # Encontrando la señal dentro de los limites establecidos
-        indices_senal_a_seguir = np.where((envolvente_inferior<lim_superior) & 
-                                  (envolvente_inferior >= lim_inferior))
-        senal_a_seguir = envolvente_inferior[indices_senal_a_seguir]
-        lambda_senal_a_seguir = lambda_envolvente_inferior[indices_senal_a_seguir] 
+        indices_senal_a_seguir = np.where((envolvente_superior<lim_superior) & 
+                                  (envolvente_superior >= lim_inferior))
+        senal_a_seguir = envolvente_superior[indices_senal_a_seguir]
+        lambda_senal_a_seguir = lambda_envolvente_superior[indices_senal_a_seguir] 
 
         # Dividiento la señal en dos: 
         
