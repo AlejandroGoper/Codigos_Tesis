@@ -38,15 +38,19 @@ carpeta = "Medicion iguales"
 
 #subcarpeta = "Capilar2"
 
-ruta_directorio = "../" + fecha_medicion + "/" + carpeta
+#ruta_directorio = "../" + fecha_medicion + "/" + carpeta
+
+
+ruta_directorio = "../" + "Mediciones_Monse" + "/" + "4xLcav" 
+
 
 nombre_archivo = "Espectro (1)"
 
-path = ruta_directorio + "/" + nombre_archivo + ".txt"
+path = ruta_directorio + "/" + nombre_archivo + ".dat"
 
-data = np.loadtxt(path, skiprows=0)
+data = np.loadtxt(path, skiprows=58)
 
-path = ruta_directorio + "/Referencia.txt"
+path = ruta_directorio + "/Referencia.dat"
 
 referencia = np.loadtxt(path, skiprows=58)
 
@@ -71,7 +75,7 @@ lambda_, potencia_dBm = data[:,0], data[:,1]
 
 # Normalizando respecto a la referencia
 
-potencia_dB = potencia_dBm  - (potencia_dBm_ref + 10*np.log10(25))
+potencia_dB = potencia_dBm  - potencia_dBm_ref
 
 """
 ==============================================================================
@@ -205,6 +209,11 @@ Cambiando la señal filtrada a escala Lineal
 # Cambiando a escala lineal
 
 senal_filtrada_esc_lineal = 10**(senal_filtrada/10)
+
+# Ajustando senal para que la normalizacion con respecto a la referencia (4%)
+# sea considerado el 100% 
+
+senal_filtrada_esc_lineal /= 25
 
 """
 ==============================================================================
