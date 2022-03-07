@@ -48,7 +48,9 @@ for archivo in lista:
         # Separando columnas del archivo en arreglos individuales        
         lambda_, potencia_dBm = data[:,0], data[:,1]
         # Damos por hecho que lambda_ = lambda_ref
-
+        
+        print("Procesando: ", archivo.name[0:-4])
+        
         """
         ======================================================================
         Normalizando respecto a la referencia en escala Logaritmica 
@@ -128,7 +130,8 @@ for archivo in lista:
         # puntos maximos
         lim_amplitud = senal_filtrada.min()
         # Buscando picos por encima del valor minimo de la señal
-        indices_picos, _ = find_peaks(senal_filtrada, height = lim_amplitud)
+        indices_picos, _ = find_peaks(senal_filtrada, height = lim_amplitud,
+                                      distance=1)
         
         # Mapeando los indices de los maximos en el dominio y rango de la señal
         envolvente_superior = senal_filtrada[indices_picos]
@@ -155,8 +158,8 @@ for archivo in lista:
         ==============================================================================
         """
 
-        lim_inferior = 0.035 # [u.a]
-        lim_superior = 0.075 # [u.a]
+        lim_inferior = 0.03 # [u.a]
+        lim_superior = 0.12 # [u.a]
         # Umbral para dividir la señal en dos (superior e inferior)
         prom = (lim_inferior + lim_superior)/2
 
@@ -255,7 +258,7 @@ for archivo in lista:
         """
 
         # Creando figura
-        fig, ax = plt.subplots(figsize=(40,20))
+        fig, ax = plt.subplots(figsize=(40,40))
         # Pone lo mas juntas las graficas posibles
         fig.set_tight_layout(True)
         # Para que no se empalmen los titulos en los ejes
@@ -285,7 +288,8 @@ for archivo in lista:
                                 s=150, c="red", label="Envolvente")
         ax.scatter(lambda_env_inf_senal_rastreable, 
                                 env_inf_senal_rastreable, 
-                                s=150, c="red")
+                                 s=150, c="red")
+        
         ax.set_xlabel(xlabel=r"$\lambda [nm]$", fontsize=30)
         ax.set_ylabel(ylabel=r"$[u.a]$", fontsize=30)
         ax.set_title(label="Dominio óptico", fontsize=30)
@@ -346,7 +350,6 @@ for archivo in lista:
         ax.legend(loc="best")
         #ax.set_xlim([lim_inf_,lim_sup_])
         #ax.set_ylim([0,1])
-        
         
         
         #Creando caja de texto para mostrar los resultados en la imagen
