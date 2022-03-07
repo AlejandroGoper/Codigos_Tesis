@@ -20,7 +20,7 @@ Referencias:
     [8] https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.windows.kaiser.html
 """
 
-from numpy import pi, arange, sin, exp, cos, convolve
+from numpy import pi, arange, sin, exp, cos, convolve, seterr, divide
 from scipy.signal import filtfilt
 from scipy.signal.windows import kaiser
 
@@ -130,9 +130,13 @@ class Filtro():
         w_c = self.frec_corte  # frecuencia de corte
         # Dominio de la secuencia h[n]
         n = arange(0,N)
-        # Calculando los coeficientes b[n] de la respuesta de un filtro pasa bajos ideal
+        # Calculando los coeficientes b[n] de la respuesta de un filtro 
+        # pasa bajos ideal
+        
         # Es un seno cardinal
-        _h_n = sin(w_c*(n-M/2))/(pi*(n-M/2))
+        # Ignorando la advertencia de division entre 0
+        seterr(invalid="ignore")
+        _h_n = divide(sin(w_c*(n-M/2)),(pi*(n-M/2)))
         # Agregando la contribucion central del seno cardinal (dado que no esta definida aun)
         _h_n[int(M/2)] = w_c/pi
         return _h_n
