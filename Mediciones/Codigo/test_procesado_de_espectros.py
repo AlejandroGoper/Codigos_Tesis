@@ -36,7 +36,7 @@ Importando Datos:
 
 
 # Definiendo ruta a la carpeta de las mediciones 
-ruta_directorio = "../" + "01-03-2022" + "/" + "Medicion muy cercas" + "/" 
+ruta_directorio = "../" + "04-03-2022" +"/" + "Efecto Vernier" +  "/" + "Aire-Glicerina" + "/" + "100um" + "/"
 
 
 # Con esta instucción encontramos una lista de todos los archivos .dat en el 
