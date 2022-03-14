@@ -114,29 +114,30 @@ class FPI_2GAP_parallel:
         
         
         
-        I =0.5*(            
+        I =0.5*(
+                # Contribuciones lineales            
                 R_11 + R_12 + R_21*((1-A_11)**2)*((1-R_11)**2)*exp(-4*a_11*L_11) +
                 R_22*((1-A_12)**2)*((1-R_12)**2)*exp(-4*(a_12*L_12)) +
                 R_31*((1-A_11)**2)*((1-A_21)**2)*((1-R_11)**2)*((1-R_21)**2)*exp(-4*(a_11*L_11 + a_21*L_21)) +
                 R_32*((1-A_12)**2)*((1-A_22)**2)*((1-R_12)**2)*((1-R_22)**2)*exp(-4*(a_12*L_12 + a_22*L_22)) +
                 2*sqrt(R_11*R_12)*cos(O_01 - O_02) +
-                
+                # Contribuciones unicas
                 2*sqrt(R_11*R_21)*(1-A_11)*(1-R_11)*exp(-2*a_11*L_11)*cos(2*phi_11-(O_01-O_11)) +
                 2*sqrt(R_12*R_21)*(1-A_11)*(1-R_11)*exp(-2*a_11*L_11)*cos(2*phi_11-(O_02-O_11)) +
                 2*sqrt(R_11*R_22)*(1-A_12)*(1-R_12)*exp(-2*a_12*L_12)*cos(2*phi_12-(O_01-O_12)) +
                 2*sqrt(R_12*R_22)*(1-A_12)*(1-R_12)*exp(-2*a_12*L_12)*cos(2*phi_12-(O_02-O_12)) +
                 2*sqrt(R_21*R_31)*((1-A_11)**2)*(1-A_21)*((1-R_11)**2)*(1-R_21)*exp(-2*(2*a_11*L_11+a_21*L_21))*cos(2*phi_21-(O_11-O_21)) +
                 2*sqrt(R_22*R_32)*((1-A_12)**2)*(1-A_22)*((1-R_12)**2)*(1-R_22)*exp(-2*(2*a_12*L_12+a_22*L_22))*cos(2*phi_22-(O_12-O_22)) +
-                
+                # Contribuciones dobles
                 2*sqrt(R_11*R_31)*(1-A_11)*(1-A_21)*(1-R_11)*(1-R_21)*exp(-2*(a_11*L_11+a_21*L_21))*cos(2*(phi_11+phi_21)-(O_01-O_21)) +
                 2*sqrt(R_12*R_31)*(1-A_11)*(1-A_21)*(1-R_11)*(1-R_21)*exp(-2*(a_11*L_11+a_21*L_21))*cos(2*(phi_11+phi_21)-(O_02-O_21)) +
                 2*sqrt(R_11*R_32)*(1-A_12)*(1-A_22)*(1-R_12)*(1-R_22)*exp(-2*(a_12*L_12+a_22*L_22))*cos(2*(phi_12+phi_22)-(O_01-O_22)) +
                 2*sqrt(R_12*R_32)*(1-A_12)*(1-A_22)*(1-R_12)*(1-R_22)*exp(-2*(a_12*L_12+a_22*L_22))*cos(2*(phi_12+phi_22)-(O_02-O_22)) +
                 2*sqrt(R_21*R_22)*(1-A_11)*(1-A_12)*(1-R_11)*(1-R_12)*exp(-2*(a_11*L_11+a_12*L_12))*cos(2*(phi_12-phi_11)-(O_11-O_12)) +
-
+                # Contribuciones triples
                 2*sqrt(R_22*R_31)*(1-A_11)*(1-A_12)*(1-A_21)*(1-R_11)*(1-R_12)*(1-R_21)*exp(-2*(a_11*L_11 + a_12*L_12 + a_21*L_21))*cos(2*(phi_11+ phi_21 - phi_12) - (O_12-O_21)) +                 
                 2*sqrt(R_21*R_32)*(1-A_11)*(1-A_12)*(1-A_22)*(1-R_11)*(1-R_12)*(1-R_22)*exp(-2*(a_11*L_11 + a_12*L_12 + a_22*L_22))*cos(2*(phi_12+ phi_22 - phi_11) - (O_11-O_22)) +
-                
+                # Contribuciones cuadruples
                 2*sqrt(R_31*R_32)*(1-A_11)*(1-A_12)*(1-A_21)*(1-A_22)*(1-R_11)*(1-R_12)*(1-R_21)*(1-R_22)*exp(-2*(a_11*L_11 + a_12*L_12 + a_21*L_21 + a_22*L_22))*cos(2*( phi_12+phi_22 -phi_11 - phi_21 )-(O_21 - O_22))
                 )
         return I 
@@ -180,13 +181,3 @@ class FPI_2GAP_parallel:
         r = (n1 - n0) / (n1 + n0)
         R_ = r*r
         return R_
-    
-    """
-    Metodo phi_1:
-        Determina el desplazamiento de fase cuando la luz atraviesa el medio 1
-        El factor de 1x10**6 es para el ajuste de unidades de mm y nm 
-    
-    def phi_1(self,lambda_):
-        phi = 2*pi*self.eta_0*self.L1*(1*10**6) / lambda_
-        return phi
-    """
