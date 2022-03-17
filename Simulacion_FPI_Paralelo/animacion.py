@@ -16,7 +16,7 @@ Script para crear la animacion de la simulacion del sistema FPI-2GAP-parallel
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation, writers
-from FabryPerot.Clase import FPI_2GAP_parallel
+from FabryPerot.FPI import FPI_1GAP_parallel
 from FabryPerot.Filtros_support import *
 from FabryPerot.FFT_support import encontrar_FFT_dominio_en_OPL
 from sklearn.neighbors import NearestNeighbors
@@ -53,7 +53,7 @@ lambda_ = np.arange(lambda_inicial,lambda_final, T_muestreo_lambda)
 
 # Definiendo limite de busqueda en el espectro de Fourier (OPL en milimetros)
 lim_inf = 0 # mm 
-lim_sup = 6 # mm
+lim_sup = 3 # mm
 
 #Periodo de muestreo = (lambda_[-1] - lambda_[0])/len(lambda_) Approx 0.005 nm
 
@@ -64,31 +64,50 @@ n = len(lambda_) # Cantidad de datos en el arreglo
 """
 ==============================================================================
 Vamos a considerar una sistema:
-    Fibra - n_0 = 1.45
-    Aire - n_1 = 1.003
-    Vidrio - n_2 = 1.65
-    Fibra - n_2 = 1.45
+    Fibra - n_01 = 1.45
+    Longitud - L_01 = 300 mm (30 cm)
+    Aire - n_11 = 1.003
+    Longitud - L_11 = 0.5 mm 
+    Vidrio - n_21 = 1.65
+    
+    Y aparte
+    
+    Fibra - n_02 = 1.45
+    Longitud - L_02 = 200 mm (20 cm)
+    Aire - n_12 = 1.003
+    Longitud - L_12 = 0.3 mm 
+    Vidrio - n_22 = 1.65
+   
+    
+   Luego vamos a variar la longitud L_02
 ==============================================================================
 """
 
 # Indices del primer interferometro
-n_1 = [1.45, 1.003, 1.65, 1.45]
+# [n_01, n_11, n_21]
+n_1 = [1.45, 1.003, 1.65]
 # Indices del segundo interferometro
-n_2 = [1.45, 1.003, 1.65, 1.45]
+# [n_02, n_12, n_22]
+n_2 = [1.45, 1.003, 1.65]
 
 # Longitud de cavidades del primer interferometro [mm]
-L_1 = [0.8, 0.4]
+# [L_01, L_11]
+L_1 = [300, 0.5]
 # Longitud de cavidades del segundo interferometro [mm]
-L_2 = [0.8, 0.4]
+# []
+L_2 = [200, 0.45]
 
 
 # Parametros de perdida en el primer interferometro
-A_1 = [0,0]
+# Superficie
+A_11 = 0
+# Medio
 a_1 = [0,0]
 # Parametros de perdida en el segundo interferomtro
-A_2 = [0,0]
+# Superficie
+A_12 = 0
+# Medio
 a_2 = [0,0]
-
 
 
 
@@ -98,8 +117,10 @@ a_2 = [0,0]
 Obteniendo la senal simulada
 ==============================================================================
 """
-obj = FPI_2GAP_parallel(lambda_inicial=lambda_inicial, 
-                        lambda_final = lambda_final, 
+
+
+obj = FPI_1GAP_parallel(lambda_inicial=1510, 
+                        lambda_final = 1590, 
                         T_muestreo_lambda= T_muestreo_lambda, 
                         L_i1= L_1,
                         L_i2= L_2,
@@ -107,8 +128,9 @@ obj = FPI_2GAP_parallel(lambda_inicial=lambda_inicial,
                         n_i2= n_2, 
                         alpha_i1= a_1,
                         alpha_i2= a_2,
-                        A_i1= A_1,
-                        A_i2= A_2)
+                        A_11= A_11,
+                        A_12= A_12)
+
 
 reflectancia = obj.I_out()
 
@@ -358,19 +380,19 @@ def actualizar(i):
     lambda_inicial = 1510
     lambda_final = 1590
     
-    L_2 = [L_12, 0.4]
+    L_2 = [200, L_12]
     
-    obj = FPI_2GAP_parallel(lambda_inicial=1510, 
-                        lambda_final = 1590, 
-                        T_muestreo_lambda= T_muestreo_lambda, 
-                        L_i1= L_1,
-                        L_i2= L_2,
-                        n_i1= n_1, 
-                        n_i2= n_2, 
-                        alpha_i1= a_1,
-                        alpha_i2= a_2,
-                        A_i1= A_1,
-                        A_i2= A_2)
+    obj = FPI_1GAP_parallel(lambda_inicial=1510, 
+                            lambda_final = 1590, 
+                            T_muestreo_lambda= T_muestreo_lambda, 
+                            L_i1= L_1,
+                            L_i2= L_2,
+                            n_i1= n_1, 
+                            n_i2= n_2, 
+                            alpha_i1= a_1,
+                            alpha_i2= a_2,
+                            A_11= A_11,
+                            A_12= A_12)
 
     senal = obj.I_out()
     senal_dB = 10*np.log10(senal)
@@ -499,7 +521,7 @@ def actualizar(i):
     # Construyendo una ventana w_n del mismo tamaño que el array de la senal
     
     #w_n = ventana_de_gauss(orden=len(senal_filtrada_esc_lineal), sigma=0.05)
-    w_n = ventana_de_hanning(orden=len(senal_filtrada_esc_lineal))
+    #w_n = ventana_de_hanning(orden=len(senal_filtrada_esc_lineal))
     # w_n = ventana_flattop(orden=len(senal_filtrada_esc_lineal))
     
     """
@@ -510,7 +532,7 @@ def actualizar(i):
         - beta = 6 - Ventana de Hanning
         - beta = 8.6 - Ventana de Blackman - Harris
         """
-    #w_n = ventana_kaiser_bessel(orden=len(senal_filtrada_esc_lineal), beta=6)
+    w_n = ventana_kaiser_bessel(orden=len(senal_filtrada_esc_lineal), beta=8.6)
     # Enventanado de la senal en escala lineal
     senal_enventanada = senal_filtrada_esc_lineal * w_n
     
@@ -609,5 +631,5 @@ anim = FuncAnimation(fig, actualizar, repeat = True, frames= np.arange(0,100),
 # Guardaremos la animacion
 Writer = writers["ffmpeg"]
 writer = Writer(fps=1, metadata={"artist":"IAGP"}, bitrate=1800)
-anim.save("Variacion_L12_FPI-2GAP-parallel_10um.mp4",writer)
+anim.save("Variacion_L12_FPI-1GAP-parallel_10um.mp4",writer)
 

@@ -55,7 +55,7 @@ class FPI_2GAP_parallel:
 
     """
     ==========================================================================
-    Metodo R:
+    Metodo I_out:
         Evalua la intensidad de la luz de salida
     ==========================================================================
     """
@@ -181,3 +181,130 @@ class FPI_2GAP_parallel:
         r = (n1 - n0) / (n1 + n0)
         R_ = r*r
         return R_
+    
+    
+    
+"""
+==============================================================================
+Clase para la simulacion del modelo de un interferometro fabry-perot de una
+cavidad en paralelo.
+
+Esta clase HEREDA de la clase anterior para ahorrar la escritura de algunos
+metodos
+==============================================================================
+"""
+
+class FPI_1GAP_parallel(FPI_2GAP_parallel):
+    """
+    ==========================================================================
+    Metodo constructor:
+        Definicion de Atributos de clase
+    ==========================================================================
+    """
+    
+    def __init__(self, lambda_inicial, lambda_final, T_muestreo_lambda, 
+                 L_i1, # Longitudes del primer inteferometro 
+                 L_i2, # Longitudes del segundo interferometro
+                 n_i1, # Indices de los medios del primer interferometros
+                 n_i2, # Indices de los medios del segundo interferometro
+                 alpha_i1, # Perdida en los medios del primer interferometro  
+                 alpha_i2, # Perdida en los medios del segundo interferometro
+                 A_11, # Perdida en las interfaces del primer interferometro
+                 A_12 # Perdida en las interfaces del segundo interferometro
+                 ):
+        
+        # Array de longitudes de onda de la simulacion
+        self.lambda_ = arange(lambda_inicial, lambda_final, T_muestreo_lambda)
+        
+        # Indices de refraccion de los medios
+        self.n_01, self.n_11, self.n_21 = n_i1[:]   # FPI 1 
+        self.n_02, self.n_12, self.n_22 = n_i2[:]   # FPI 2
+        
+        # Longitudes de las cavidades del primer y segundo medio en mm.
+        # El primer medio es la longitud de la fibra desde el acoplador hasta
+        # la punta
+        self.L_01, self.L_11 = L_i1[:]  # FPI 1
+        self.L_02, self.L_12 = L_i2[:]  # FPI 2
+        
+        # Coeficientes de perdidas a traves de los medios
+        self.alpha_01, self.alpha_11 = alpha_i1[:]    # FPI 1
+        self.alpha_02, self.alpha_12 = alpha_i2[:]    # FPI 2
+         
+        # Coeficientes de perdidas en las interfaces
+        self.A_11 = A_11  # FPI 1
+        self.A_12 = A_12  # FPI 2
+    
+    """
+    ==========================================================================
+    Metodo I_out:
+        Evalua la intensidad de la luz de salida
+    ==========================================================================
+    """
+    def I_out(self):
+        
+        # Evaluando las reflectancias del FPI 1 
+        R_11 = self.R(n0 = self.n_01, n1 = self.n_11) 
+        R_21 = self.R(n0 = self.n_11, n1 = self.n_21)
+        # Evaluando las reflectanciaas del FPI 2
+        R_12 = self.R(n0 = self.n_02, n1 = self.n_12) 
+        R_22 = self.R(n0 = self.n_12, n1 = self.n_22)
+    
+        # Coeficientes de perdidas en los medios del FPI 1 
+        a_01 = self.alpha_01
+        a_11 = self.alpha_11
+        # Coeficientes de perdidas en los medios del FPI 2 
+        a_02 = self.alpha_02
+        a_12 = self.alpha_12
+        
+        # Coeficientes de perdidas en las interfaces del FPI 1
+        A_11 = self.A_11
+        # Coeficientes de perdidas en las interfaces del FPI 2
+        A_12 = self.A_12
+        
+        # Longitud de los medios del FPI 1
+        L_01 = self.L_01
+        L_11 = self.L_11
+        # Longitud de los medios del FPI 2
+        L_02 = self.L_02
+        L_12 = self.L_12
+        
+        # Evaluando el desfase theta entre las interfaces del FPI 1 
+        # al reflejarse la luz         
+        O_01 = self.theta(n0=self.n_01, n1=self.n_11)
+        O_11 = self.theta(n0=self.n_11, n1=self.n_21)
+        
+        # Evauando el desfase theta entre las interfaces del FPI 2 
+        # al reflejarse la luz         
+        O_02 = self.theta(n0=self.n_02, n1=self.n_12)
+        O_12 = self.theta(n0=self.n_12, n1=self.n_22)
+
+        # Evaluando el desplazamiento de fase de la luz al pasar por los medios
+        # del FPI 1 
+        phi_01 = self.phi(lambda_=self.lambda_, n=self.n_01, L=self.L_01)
+        phi_11 = self.phi(lambda_=self.lambda_, n=self.n_11, L=self.L_11)
+        # Evaluando el desplazamiento de fase de la luz al pasar por los medios
+        # del FPI 2
+        phi_02 = self.phi(lambda_=self.lambda_, n=self.n_02, L=self.L_02)
+        phi_12 = self.phi(lambda_=self.lambda_, n=self.n_12, L=self.L_12)
+        
+        
+        
+        I =0.25*(
+                # Contribuciones lineales 
+                R_11*exp(-4*a_01*L_01) + R_12*exp(-4*a_02*L_02) + 
+                R_21*((1-A_11)**2)*((1-R_11)**2)*exp(-4*(a_01*L_01 + a_11*L_11))+
+                R_22*((1-A_12)**2)*((1-R_12)**2)*exp(-4*(a_02*L_02 + a_12*L_12))+
+                # Contribuciones unicas
+                2*sqrt(R_11*R_21)*(1-A_11)*(1-R_11)*exp(-2*(2*a_01*L_01 + a_11*L_11))*cos(2*phi_11 + (O_11 - O_01)) + 
+                2*sqrt(R_12*R_22)*(1-A_12)*(1-R_12)*exp(-2*(2*a_02*L_02 + a_12*L_12))*cos(2*phi_12 + (O_12 - O_02)) -
+                # Contribucions dobles
+                2*sqrt(R_11*R_12)*exp(-2*(a_01*L_01 + a_02*L_02))*cos(2*(phi_02-phi_01) + (O_02 - O_01)) - 
+                # Contribuciones triples 
+                2*sqrt(R_11*R_22)*(1-A_12)*(1-R_12)*exp(-2*(a_01*L_01 + a_02*L_02+ a_12*L_12))*cos(2*(phi_12 + phi_02-phi_01) + (O_12 - O_01)) - 
+                2*sqrt(R_12*R_21)*(1-A_11)*(1-R_11)*exp(-2*(a_01*L_01 + a_02*L_02+ a_11*L_11))*cos(2*(phi_11 + phi_01-phi_02) + (O_11 - O_02)) -
+                # Contribuciones cuadruples
+                2*sqrt(R_21*R_22)*(1-A_11)*(1-A_12)*(1-R_11)*(1-R_12)*exp(-2*(a_01*L_01 + a_02*L_02+ a_11*L_11+ a_12*L_12))*cos(2*(phi_02 - phi_01 + phi_12 - phi_11) + (O_12 - O_11))
+                )
+        return I
+        
+        
