@@ -67,7 +67,7 @@ Vamos a considerar una sistema:
     Fibra - n_01 = 1.45
     Longitud - L_01 = 300 mm (30 cm)
     Aire - n_11 = 1.003
-    Longitud - L_11 = 0.5 mm 
+    Longitud - L_11 = 0.005 mm 
     Vidrio - n_21 = 1.65
     
     Y aparte
@@ -75,11 +75,12 @@ Vamos a considerar una sistema:
     Fibra - n_02 = 1.45
     Longitud - L_02 = 200 mm (20 cm)
     Aire - n_12 = 1.003
-    Longitud - L_12 = 0.3 mm 
+    Longitud - L_12 = 0.005 mm 
     Vidrio - n_22 = 1.65
    
     
-   Luego vamos a variar la longitud L_02
+   Luego vamos a variar la longitud L_02 desde la condicion de igualdad
+   hasta 1mm más en desplazamientos de 20 um
 ==============================================================================
 """
 
@@ -92,10 +93,10 @@ n_2 = [1.45, 1.003, 1.65]
 
 # Longitud de cavidades del primer interferometro [mm]
 # [L_01, L_11]
-L_1 = [300, 0.5]
+L_1 = [200, 0.005]
 # Longitud de cavidades del segundo interferometro [mm]
 # []
-L_2 = [200, 0.45]
+L_2 = [200, 0.005]
 
 
 # Parametros de perdida en el primer interferometro
@@ -369,18 +370,19 @@ graph_2, = ax.plot(opl_env,amp_env, c="green", linewidth=1.5)
 ax.set_ylabel(r" $|I_{out}|$",fontsize=30 )
 ax.set_xlabel(r"OPL[$mm$]", fontsize=30)
 ax.set_xlim([lim_inf,lim_sup])
-#ax.set_ylim([0,0.1])
+ax.set_ylim([0,0.05 ])
 ax.set_title("FFT", fontsize=40)
 
 
 def actualizar(i):
-    di = 0.01
-    L_12 = round((i+1)*di,2)
-    label = "$L_{1,2}$ = %.2f mm"%(L_12)
+    # Incrementos de 20 um
+    di = 0.02
+    L_02 = (i+1)*di + 200
+    label = "$L_{02}$ = %.4f mm"%(L_02)
     lambda_inicial = 1510
     lambda_final = 1590
     
-    L_2 = [200, L_12]
+    L_2 = [L_02, 0.005]
     
     obj = FPI_1GAP_parallel(lambda_inicial=1510, 
                             lambda_final = 1590, 
@@ -623,7 +625,7 @@ def actualizar(i):
     return graph, graph_2, ax
 
 
-anim = FuncAnimation(fig, actualizar, repeat = True, frames= np.arange(0,100),
+anim = FuncAnimation(fig, actualizar, repeat = True, frames= np.arange(0,50),
                      interval = 1000 )
 
 #plt.show()
@@ -631,5 +633,5 @@ anim = FuncAnimation(fig, actualizar, repeat = True, frames= np.arange(0,100),
 # Guardaremos la animacion
 Writer = writers["ffmpeg"]
 writer = Writer(fps=1, metadata={"artist":"IAGP"}, bitrate=1800)
-anim.save("Variacion_L12_FPI-1GAP-parallel_10um.mp4",writer)
+anim.save("Variacion_L02_FPI-1GAP-parallel_20um.mp4",writer)
 
