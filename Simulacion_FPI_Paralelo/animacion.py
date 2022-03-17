@@ -8,7 +8,7 @@ Created on Mon Mar 14 02:27:05 2022
 
 """
 ==============================================================================
-Script para crear la animacion de la simulacion del sistema FPI-2GAP-parallel
+Script para crear la animacion de la simulacion del sistema FPI-1GAP-parallel
 ==============================================================================
 """
 
