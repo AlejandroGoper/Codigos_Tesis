@@ -27,7 +27,7 @@ Importando Datos:
 # Importando archivos 
 
 
-ruta_directorio = "../" + "Mediciones_Monse" + "/" + "1xLcav" + "/" 
+ruta_directorio ="../" + "23-03-2022_Part2" +"/" + "1x" + "/"  + "10um" + "/"
 
 
 # Con esta instucción encontramos una lista de todos los archivos txt en el 
@@ -118,69 +118,50 @@ for archivo in lista:
         # Filtrando por el metodo de las ventanas
         senal_filtrada = filtro.filtrar_por_ventana_de_gauss(sigma=0.2)
 
-
-
+        
         """
         ======================================================================
-        Encontrando las envolventes superior e inferior de todo el espectro:
-            Se encuentran los puntos maximos y minimos de todo el espectro
+        Elegimos la zona de donde queremos extraer la envolvente
         ======================================================================
         """
+        lim_inferior = 0.05 # [u.a]
+        lim_superior = 0.4# [u.a]
+        
+        # Umbral para dividir la señal en dos (superior e inferior)
+        prom = (lim_inferior + lim_superior)/2
+        
+        
         # Condicion que asegura que siempre busquemos en un rango valido los
         # puntos maximos
-        lim_amplitud = senal_filtrada.min()
+        lim_amplitud = prom
         # Buscando picos por encima del valor minimo de la señal
         indices_picos, _ = find_peaks(senal_filtrada, height = lim_amplitud,
                                       distance=1)
         
         # Mapeando los indices de los maximos en el dominio y rango de la señal
-        envolvente_superior = senal_filtrada[indices_picos]
-        lambda_envolvente_superior = lambda_[indices_picos]
+        envolvente_superior_ = senal_filtrada[indices_picos]
+        lambda_envolvente_superior_ = lambda_[indices_picos]
         
         
         # Para encontrar los minimos multiplicamos la senal original por -1
         senal_invertida = - senal_filtrada
-        lim_amplitud = senal_invertida.min()
-        indices_picos, _ = find_peaks(senal_invertida,height= lim_amplitud)
+        lim_amplitud = -prom
+        indices_picos, _ = find_peaks(senal_invertida,height= lim_amplitud, 
+                                      distance=1)
 
-        envolvente_inferior = senal_filtrada[indices_picos]
-        lambda_envolvente_inferior = lambda_[indices_picos]
+        envolvente_inferior_ = senal_filtrada[indices_picos]
+        lambda_envolvente_inferior_ = lambda_[indices_picos]
         
-
-        """
-        ==============================================================================
-        Empiricamente se ha descubierto que se puede rastrear, al menos, una 
-        señal en un rango limitado ya sea del arreglo que contiene los puntos 
-        maximos o del de los puntos minimos.
+        # Limitando a la region de interes
+        index_envolvente_superior = np.where(envolvente_superior_ <= lim_superior)
+        envolvente_superior = envolvente_superior_[index_envolvente_superior]
+        lambda_envolvente_superior = lambda_envolvente_superior_[index_envolvente_superior]
         
-        En esta seccion, se limita el rango de una de estas dos señales para
-        obtener la señal rastreable.
-        ==============================================================================
-        """
-
-        lim_inferior = 0.03 # [u.a]
-        lim_superior = 0.12 # [u.a]
-        # Umbral para dividir la señal en dos (superior e inferior)
-        prom = (lim_inferior + lim_superior)/2
-
-        # Encontrando la señal dentro de los limites establecidos
-        indices_senal_a_seguir = np.where((envolvente_superior<lim_superior) & 
-                                  (envolvente_superior >= lim_inferior))
-        senal_a_seguir = envolvente_superior[indices_senal_a_seguir]
-        lambda_senal_a_seguir = lambda_envolvente_superior[indices_senal_a_seguir] 
-
-        # Dividiento la señal en dos: 
+        index_envolvente_inferior = np.where(envolvente_inferior_ >= lim_inferior)
+        envolvente_inferior = envolvente_inferior_[index_envolvente_inferior]
+        lambda_envolvente_inferior = lambda_envolvente_inferior_[index_envolvente_inferior]
         
-        # Parte superior de la señal 
-        index_env_sup_senal_rastrable = np.where(senal_a_seguir >= prom) 
-        env_sup_senal_rastreable = senal_a_seguir[index_env_sup_senal_rastrable]
-        lambda_env_sup_senal_rastreable = lambda_senal_a_seguir[index_env_sup_senal_rastrable]
         
-        # Parte inferior de la señal
-        index_env_inf_senal_rastrable = np.where(senal_a_seguir < prom) 
-        env_inf_senal_rastreable = senal_a_seguir[index_env_inf_senal_rastrable]
-        lambda_env_inf_senal_rastreable = lambda_senal_a_seguir[index_env_inf_senal_rastrable]
-
 
         """
         ======================================================================
@@ -196,22 +177,22 @@ for archivo in lista:
         =======================================================================
         """
         # Encontrando maximos de la envolvente inferior    
-        lim_amplitud = env_inf_senal_rastreable.min()
+        lim_amplitud = envolvente_inferior.min()
 
         # Buscando picos por encima del valor minimo de la señal
-        indices_picos, _ = find_peaks(env_inf_senal_rastreable, 
-                                      height = lim_amplitud)
+        indices_picos, _ = find_peaks(envolvente_inferior, 
+                                      height = lim_amplitud, distance=1)
         
         # Arreglo temporal para almacenar los maximos de la envolvente inferior
-        intersecciones_inferior=lambda_env_inf_senal_rastreable[indices_picos]
+        intersecciones_inferior=lambda_envolvente_inferior[indices_picos]
 
         # Encontrando minimos de la envolvente superior   
-        lim_amplitud = -env_sup_senal_rastreable.max()
+        lim_amplitud = -envolvente_superior.max()
         # Buscando picos por encima del vaor minimo
-        indices_picos, _ = find_peaks(-env_sup_senal_rastreable, 
-                                      height = lim_amplitud)
+        indices_picos, _ = find_peaks(-envolvente_superior, 
+                                      height = lim_amplitud, distance=1)
         # Arreglo temporal para almacenar los minimos de la envolvente superior
-        intersecciones_superior = lambda_env_sup_senal_rastreable[indices_picos]
+        intersecciones_superior = lambda_envolvente_superior[indices_picos]
     
 
         # Lista para almacenar las intersecciones
@@ -283,12 +264,13 @@ for archivo in lista:
         ax = plt.subplot(2,2,2)
         espectro_graph, = ax.plot(lambda_,senal_filtrada, linewidth=1.5,color="purple",
                                   label="Señal filtrada")
-        ax.scatter(lambda_env_sup_senal_rastreable, 
-                                env_sup_senal_rastreable, 
+        ax.scatter(lambda_envolvente_superior, 
+                                envolvente_superior, 
                                 s=150, c="red", label="Envolvente")
-        ax.scatter(lambda_env_inf_senal_rastreable, 
-                                env_inf_senal_rastreable, 
-                                 s=150, c="red")
+        
+        ax.scatter(lambda_envolvente_inferior, 
+                                envolvente_inferior, 
+                                s=150, c="red")
         
         ax.set_xlabel(xlabel=r"$\lambda [nm]$", fontsize=30)
         ax.set_ylabel(ylabel=r"$[u.a]$", fontsize=30)
@@ -374,7 +356,7 @@ for archivo in lista:
         
         # Guardando figura
         
-        plt.savefig(ruta_directorio + "-" + archivo.name + ".png")
+        plt.savefig(ruta_directorio + "/Envolventes/" + "Envolvente_central_" + archivo.name[0:-4] + ".png")
         # Mostrando Figura
         
         plt.show()
