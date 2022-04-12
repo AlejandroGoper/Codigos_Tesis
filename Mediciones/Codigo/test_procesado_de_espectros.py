@@ -36,7 +36,7 @@ Importando Datos:
 
 
 # Definiendo ruta a la carpeta de las mediciones 
-ruta_directorio = "../" + "04-03-2022" +"/" + "Efecto Vernier" +  "/" + "Aire-Glicerina" + "/" + "100um" + "/"
+ruta_directorio = "../" + "23-03-2022_Part2" +"/" + "4x" + "/" # + "30um" + "/"
 
 
 # Con esta instucción encontramos una lista de todos los archivos .dat en el 
@@ -77,7 +77,7 @@ for archivo in lista:
         # Definiendo limite de busqueda en el espectro de Fourier 
         # (OPL en milimetros)
         lim_inf = 0 # mm 
-        lim_sup = 10 # mm
+        lim_sup = 2 # mm
         #Periodo de muestreo = (lambda_[-1] - lambda_[0])/len(lambda_) Approx 0.005 nm
         lambda_inicial = lambda_[0] # Valor inicial del arreglo
         lambda_final = lambda_[-1] # Valor final del arreglo
@@ -295,7 +295,7 @@ for archivo in lista:
         """
 
         # Eliminando la componenete de DC hasta un margen fijo en el opl
-        dc_margen = 0.1 # mm
+        dc_margen = 0.05 # mm
 
         # buscamos el indice en el array opl mas cercano a dc_margen
         nn.fit(opl_env.reshape((len(opl_env),1)))
