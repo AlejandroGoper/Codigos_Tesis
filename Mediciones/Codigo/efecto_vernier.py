@@ -27,7 +27,7 @@ Importando Datos:
 # Importando archivos 
 
 
-ruta_directorio ="../" + "23-03-2022_Part2" +"/" + "1x" + "/"  + "10um" + "/"
+ruta_directorio ="../" + "23-03-2022_Part2" +"/" + "1x" + "/"  + "30um" + "/"
 
 
 # Con esta instucción encontramos una lista de todos los archivos txt en el 
@@ -350,9 +350,9 @@ for archivo in lista:
         # Estas son propiedades de matplotlib.patch.Patch
         props = dict(boxstyle='round', facecolor='lightgray', alpha=0.8)
         
-        graph_text = ax.text(0.05, 0.25, textstr, transform=ax.transAxes, 
-                             fontsize=35, verticalalignment='top', 
-                             bbox=props, color="black")
+        #graph_text = ax.text(0.05, 0.25, textstr, transform=ax.transAxes, 
+        #                     fontsize=35, verticalalignment='top', 
+        #                     bbox=props, color="black")
         
         # Guardando figura
         
