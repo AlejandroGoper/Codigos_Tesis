@@ -36,7 +36,7 @@ Importando Datos:
 
 
 # Definiendo ruta a la carpeta de las mediciones 
-ruta_directorio = "../" + "23-03-2022_Part2" +"/" + "4x" + "/" # + "30um" + "/"
+ruta_directorio = "../" + "08-10-2021" +"/" + "1GAP-AIRE" + "/" # + "30um" + "/"
 
 
 # Con esta instucción encontramos una lista de todos los archivos .dat en el 
@@ -77,7 +77,7 @@ for archivo in lista:
         # Definiendo limite de busqueda en el espectro de Fourier 
         # (OPL en milimetros)
         lim_inf = 0 # mm 
-        lim_sup = 2 # mm
+        lim_sup = 16 # mm
         #Periodo de muestreo = (lambda_[-1] - lambda_[0])/len(lambda_) Approx 0.005 nm
         lambda_inicial = lambda_[0] # Valor inicial del arreglo
         lambda_final = lambda_[-1] # Valor final del arreglo
@@ -322,7 +322,7 @@ for archivo in lista:
 
         # Necesitamos definir un valor limite en altura en el grafico de la amplitud
         # se buscaran los maximos que superen este valor
-        lim_amp = 0.002
+        lim_amp = 0.00015
 
         # Buscando maximos en la region limitada
         picos, _ = find_peaks(amp_env_temp, height = lim_amp)
