@@ -36,7 +36,7 @@ Importando Datos:
 
 
 # Definiendo ruta a la carpeta de las mediciones 
-ruta_directorio = "../" + "08-10-2021" +"/" + "1GAP-AIRE" + "/" # + "30um" + "/"
+ruta_directorio = "../" + "13-10-2021" +"/" + "2GAP-AIRE-AGUA-2" + "/" # + "30um" + "/"
 
 
 # Con esta instucción encontramos una lista de todos los archivos .dat en el 
