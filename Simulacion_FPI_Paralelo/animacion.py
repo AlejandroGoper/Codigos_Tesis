@@ -53,7 +53,7 @@ lambda_ = np.arange(lambda_inicial,lambda_final, T_muestreo_lambda)
 
 # Definiendo limite de busqueda en el espectro de Fourier (OPL en milimetros)
 lim_inf = 0 # mm 
-lim_sup = 3 # mm
+lim_sup = 200 # mm
 
 #Periodo de muestreo = (lambda_[-1] - lambda_[0])/len(lambda_) Approx 0.005 nm
 
@@ -89,14 +89,14 @@ Vamos a considerar una sistema:
 n_1 = [1.45, 1.003, 1.65]
 # Indices del segundo interferometro
 # [n_02, n_12, n_22]
-n_2 = [1.45, 1.003, 1.65]
+n_2 = [1.45, 1.003, 1.67]
 
 # Longitud de cavidades del primer interferometro [mm]
 # [L_01, L_11]
 L_1 = [200, 0.005]
 # Longitud de cavidades del segundo interferometro [mm]
 # []
-L_2 = [200, 0.005]
+L_2 = [200, 0.01]
 
 
 # Parametros de perdida en el primer interferometro
@@ -376,7 +376,7 @@ ax.set_title("FFT", fontsize=40)
 
 def actualizar(i):
     # Incrementos de 20 um
-    di = 0.02
+    di = 0.2
     L_02 = (i+1)*di + 200
     label = "$L_{02}$ = %.4f mm"%(L_02)
     lambda_inicial = 1510

@@ -36,7 +36,7 @@ Importando Datos:
 
 
 # Definiendo ruta a la carpeta de las mediciones 
-ruta_directorio = "../" + "13-10-2021" +"/" + "2GAP-AIRE-AGUA-2" + "/" # + "30um" + "/"
+ruta_directorio = "../" + "23-03-2022/" + "3x/" #+ "100um_arriba_igualdad" + "/" # + "30um" + "/"
 
 
 # Con esta instucción encontramos una lista de todos los archivos .dat en el 
@@ -71,13 +71,30 @@ for archivo in lista:
 
         """
         ======================================================================
+        Cambiando a escala lineal y calculando la reflectancia
+        ======================================================================
+        """
+
+        reflectancia = (10**(potencia_dB/10))/25
+
+        """
+        ======================================================================
+        Eliminando componente de DC
+        ======================================================================
+        """
+
+        reflectancia -= np.mean(reflectancia)
+
+
+        """
+        ======================================================================
         Definicion de parametros
         ======================================================================
         """
         # Definiendo limite de busqueda en el espectro de Fourier 
         # (OPL en milimetros)
         lim_inf = 0 # mm 
-        lim_sup = 16 # mm
+        lim_sup = 10 # mm
         #Periodo de muestreo = (lambda_[-1] - lambda_[0])/len(lambda_) Approx 0.005 nm
         lambda_inicial = lambda_[0] # Valor inicial del arreglo
         lambda_final = lambda_[-1] # Valor final del arreglo
@@ -93,7 +110,7 @@ for archivo in lista:
 
         opl,amp = encontrar_FFT_dominio_en_OPL(lambda_inicial=lambda_inicial, 
                                                lambda_final=lambda_final, 
-                                               senal=potencia_dB)
+                                               senal=reflectancia)
 
 
         """
@@ -167,7 +184,7 @@ for archivo in lista:
 
 
         # Creando objeto de la clase Filtro
-        filtro = Filtro(_senal=potencia_dB, # senal a filtrar
+        filtro = Filtro(_senal=reflectancia, # senal a filtrar
                         _T_muestreo=T_muestreo_beta_opl, # Periodo de muestreo
                         _frec_corte=lim_sup, # Frecuencia de corte en unidades de T_muestreo
                         _orden=901) # Orden del Filtro
@@ -186,28 +203,6 @@ for archivo in lista:
 
 
 
-
-
-
-        """
-        ======================================================================
-        Cambiando la señal filtrada a escala Lineal
-        ======================================================================
-        """
-        
-        """
-        **********************************************************************
-         La normalizacion se hace escalando la referencia por un factor que
-         hace que el 4% de refleccion obtenido en el espectro, sea, ahora,
-         considerado como el 100%, por lo tanto debemos dividir la potencia
-         en escala lineal por un factor de 25.
-        **********************************************************************
-        """
-        # Cambiando a escala lineal
-
-        senal_filtrada_esc_lineal = 10**(senal_filtrada/10)
-        senal_filtrada_esc_lineal /= 25
-
         """
         ======================================================================
         Aplicando tecnica WINDOWING:
@@ -219,7 +214,7 @@ for archivo in lista:
         # Construyendo una ventana w_n del mismo tamaño que el array de la senal
 
         # w_n = ventana_de_gauss(orden=len(senal_filtrada_esc_lineal), sigma=0.08)
-        w_n = ventana_de_hanning(orden=len(senal_filtrada_esc_lineal))
+        w_n = ventana_de_hanning(orden=len(senal_filtrada))
         # w_n = ventana_flattop(orden=len(senal_filtrada_esc_lineal))
 
         """
@@ -234,7 +229,7 @@ for archivo in lista:
         """
         # w_n = ventana_kaiser_bessel(orden=len(senal_filtrada_esc_lineal), beta=6)
         # Enventanado de la senal en escala lineal
-        senal_enventanada = senal_filtrada_esc_lineal * w_n
+        senal_enventanada = senal_filtrada * w_n
 
 
 
@@ -248,7 +243,7 @@ for archivo in lista:
         # array
 
         # Numero de ceros a agregar en cada extremo
-        n_zeros = 10000
+        n_zeros = 0
 
         """
         **********************************************************************
@@ -264,10 +259,11 @@ for archivo in lista:
 
         # Agregando las correspondientes longitudes de onda (virtuales) 
         # correspondientes a los ceros añadidos a los extremos 
-        lambda_mejorada = np.arange(1510-n_zeros*T_muestreo_lambda, 
+        lambda_mejorada = np.arange(1510-n_zeros*T_muestreo_lambda,  
                                     1590 + n_zeros*T_muestreo_lambda-0.00001,
                                     T_muestreo_lambda) 
-
+                                    
+        print(len(senal_enventanada), len(lambda_mejorada))
         # Le agregamos un -0.00001 al final del segun parametro para asegurar 
         # que la longitud de lambda_mejorada sea la misma que la de la senal 
         # enventanada dado que si se lo quitamos en ocaciones la longitud 
@@ -295,13 +291,13 @@ for archivo in lista:
         """
 
         # Eliminando la componenete de DC hasta un margen fijo en el opl
-        dc_margen = 0.05 # mm
+        #dc_margen = 0.05 # mm
 
         # buscamos el indice en el array opl mas cercano a dc_margen
         nn.fit(opl_env.reshape((len(opl_env),1)))
-        index_dc_margen = nn.kneighbors([[dc_margen]], 1, return_distance=False)[0,0]
+        #index_dc_margen = nn.kneighbors([[dc_margen]], 1, return_distance=False)[0,0]
         # eliminamos todas las contribuciones del espectro de fourier hasta dc_margen
-        amp_env[:index_dc_margen] = np.zeros(index_dc_margen)
+        #amp_env[:index_dc_margen] = np.zeros(index_dc_margen)
 
 
         """
@@ -360,10 +356,10 @@ for archivo in lista:
         
         # Graficando el espectro optico inicial
         ax = plt.subplot(4,2,1)
-        espectro_graph, = ax.plot(lambda_,potencia_dB, linewidth=1.5, 
-                                  label= "Medición Normalizada")
+        espectro_graph, = ax.plot(lambda_,reflectancia, linewidth=1.5, 
+                                  label= "Reflectancia")
         ax.set_xlabel(xlabel=r"$\lambda [nm]$", fontsize=30)
-        ax.set_ylabel(ylabel=r"$dB$", fontsize=30)
+        ax.set_ylabel(ylabel=r"Reflectancia $[u.a.]$", fontsize=30)
         ax.set_title(label="Dominio óptico", fontsize=30)
         #ax.set_ylim([-40,-10])
         ax.legend(loc="best",fontsize=30)
@@ -382,7 +378,7 @@ for archivo in lista:
         espectro_graph, = ax.plot(lambda_,senal_filtrada, linewidth=1.5, 
                                   label="Señal filtrada")
         ax.set_xlabel(xlabel=r"$\lambda [nm]$", fontsize=30)
-        ax.set_ylabel(ylabel=r"$dB$", fontsize=30)
+        ax.set_ylabel(ylabel=r"$[u.a.]$", fontsize=30)
         ax.set_title(label="Dominio óptico", fontsize=30)
         #ax.set_ylim([-40,-10])
         ax.legend(loc="lower left",fontsize=30)
@@ -399,7 +395,7 @@ for archivo in lista:
         
         # Graficando el espectro optico de la señal tratada 
         ax = plt.subplot(4,2,5)
-        espectro_graph, = ax.plot(lambda_, senal_filtrada_esc_lineal, 
+        espectro_graph, = ax.plot(lambda_, senal_filtrada, 
                                   linewidth=1.5, label="Señal mejorada")
         ax.set_xlabel(xlabel=r"$\lambda [nm]$", fontsize=30)
         ax.set_ylabel(ylabel=r"$[u.a.]$", fontsize=30)
