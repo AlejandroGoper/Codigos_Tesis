@@ -1,7 +1,22 @@
-# Codigos para Tesis de licenciatura
+# Codigos para Tesis de licenciatura: Estudio de la respuesta de dos interferómetros Fabry-Pérot extrínsecos de dos cavidades en serie y en paralelo
 
-## Objetivos:
-- Analisis y simulaciones del proyecto de tesis
+Los códigos aquí mostrados y construidos por el Ing. Israel Alejandro Gómez Pérez, sirvieron ampliamente en el estudio y análisis de la reflectancia en las variantes de los interferómetros Fabry-Pérot. Brevemente se bosqueja el panorama general del funcionamiento de dichos códigos escritos en el lenguaje de programación Python.
+
+# Objetivos:
+- Procesar automáticamente espectros de laboratorio en conjunto
+- Aplicar filtros, y técnicas para mejorar la señal base de los espectros del laboratorio
+- Simular los modelos discutidos en el documento de tésis
+- Realizar una sencilla animación del compartamiento de espectros tomados consecutivamente 
+
+# Requerimientos de software
+
+## Sobre el sistema operativo
+
+Todos los códigos fueron desarrollados usando el sistema operativo Linux Ubuntu 20.04. Sin embargo, el lenguaje de programación Python, es universal y valido en cualquier sistema operativo, siempre y cuando se tenga el compilador de Python pertinente. 
+
+##  
+
+
 
 ### Simulacion1:
 
