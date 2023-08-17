@@ -22,7 +22,7 @@ Se detalla brevemente el condetido de cada carpeta.
 
 ## Mediciones
 
-Dicha carpeta contiene los códigos para el procesamiento automatico de diversos espectros obtenidos del laboratorio. 
+Dicha carpeta contiene los códigos para el procesamiento de diversos espectros obtenidos del laboratorio. 
 
 ### 08-10-2021
 Dicha carpeta contiene dos Jupiter Notebooks para diferentes propositos:
@@ -37,9 +37,18 @@ Dicha carpeta contiene dos Jupiter Notebooks para diferentes propositos:
 
 **Cabe señalar que**: Dentro de la carpeta 08-10-2021 y diversas partes más se encuentra una carpeta llamada **FabryPerot**. Esta carpeta contiene los codigos escenciales para llevar a cabo la serie discreta de Fourier (FFT) así como el filtrado de la señal y la ténica windowing en Python. Dichos codigos están documentados y no es necesario que se explique el functionamiento a detalle en esta sección.
 
-### Mediciones
+### Código
 
+Esta carpeta contiene diversos programas multipropósito.
 
+- efecto_vernier.py: Este programa encuentra los "nodos" de una señal que presenta el efecto vernier. **Importante:** La eficiencia del script varía según las condiciones de obtención y calidad de la señal, el mejor rango de observación para medición automatizada con este programa es en torno del primer armonico como se discutió en el documento de tesis. Algunas señales presentan diversos puntos que se pueden seguir y el método de medición automática ya no es eficiente. Y se sugiere nuevos algoritmos, o bien, manualmente.
+- envolvente.py: Este programa divide el espectro en dos envolvente (superior e inferior) y luego encuentra aproximadamente los nodos con base en las envolventes.
+- FFT_test.py : Este programa realiza la mejora de la señal en el espectro de Fourier (usando los algoritmos mencionados en el documento de tesis).
+- filtrado.py : Este programa contiene pruebas del funcionamiento del filtrado de la señal.
+- main.py : Este programa realiza una animación con los espectros del laboratorio, aplicando a todos las mismas técnicas de mejora.
+- test_procesado_de_espectros,py : Este programa aplica a todos los espectros de una carpeta las mismas técnicas de mejora y regresa los graficos en dominio óptico y de Fourier automaticamente. 
+
+**Todos los códigos estan documentados.**
 
 ## Simulacion_FPI_Serie
 
