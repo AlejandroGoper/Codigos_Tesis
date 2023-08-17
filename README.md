@@ -22,6 +22,20 @@ Se detalla brevemente el condetido de cada carpeta.
 
 ## Mediciones
 
+Dicha carpeta contiene los códigos para el procesamiento automatico de diversos espectros obtenidos del laboratorio. 
+
+### 08-10-2021
+Dicha carpeta contiene dos Jupiter Notebooks para diferentes propositos:
+
+- interact_FFT: Este jupiter notebook permite procesar y modificar en tiempo real, un espectro de Fourier específico localizado en una carpeta determinada y especificada por el usuario, y variar los parametros escenciales tanto visuales como de procesamiento; por ejemplo, se puede cambiar de espectro (siempre y cuando esté localizado en la carpeta), se puede agregar un determinado número de 0 al inicio y final de la señal (post-windowing) para mejorar la resolución en el espacio de Fourier, dc_margin_ es un parámetro que permite eliminar la señal desde 0 mm hasta el valor específicado por el usuario, lim_amp_ es un parámetros que permite localizar los máximos en el espectro de fourier por encima de este valor, beta_ es el parámetro de la ventana Kaisser-Bessel que permite modificar el tipo de ventana según el valor númerico ingresado (de esta manera se pueden probar diferentes ventanas en tiempo real), lim_inf_x y lim_sup_x son parametros que controlar la visualización de la imagen.
+
+- utilidades: Este jupiter notebook contiene fragmentos de código para soluciones AD-HOC, por ejemplo, permite realizar el ajuste lineal de datos, permite realizar gráficos de caja, calcular desviación estandar y promedios, graficar espectros únicos en dominio óptico y de Fourier, filtrar un espectro de laboratorio, filtrado + tecnica windowing, graficar conjuntamente el dominio óptico y de fourier de un solo espectro (con las tencicas de mejora de la senal), graficar la simulación del modelo tanto en serie como en paralelo. 
+
+### 18-10-2021
+
+- utilidades: Este jupiter notebook esta dedicado principalmente a graficar el desplazamiento nominal de las monturas de desplazamiento vs. el desplazamiento medido en el espacio de Fourier y realizar un ajuste lineal, y otro tipo de pruebas no reelevantes para el procesamiento de los espectros en sí mismo.
+
+**Cabe señalar que**: Dentro de la carpeta 08-10-2021 y diversas partes más se encuentra una carpeta llamada **FabryPeror**. Esta carpeta contiene los codigos escenciales para llevar a cabo la serie discreta de Fourier (FFT) así como el filtrado de la señal y la ténica windowing en Python. Dichos codigos están documentados y no es necesario que se explique el functionamiento a detalle en esta sección.
 
 ## Simulacion_FPI_Serie
 Contiene la simulacion de un interferometro de Fabry-Perot de dos cavidades para la señal de la reflectancia. Se realiza una animación de la variación de la señal conforme al parámetro $L_{1}$, que es la longitud de la primera cavidad. Además se ha realizado la transformada de fourier de la señal.
