@@ -35,9 +35,27 @@ Dicha carpeta contiene dos Jupiter Notebooks para diferentes propositos:
 
 - utilidades: Este jupiter notebook esta dedicado principalmente a graficar el desplazamiento nominal de las monturas de desplazamiento vs. el desplazamiento medido en el espacio de Fourier y realizar un ajuste lineal, y otro tipo de pruebas no reelevantes para el procesamiento de los espectros en sí mismo.
 
-**Cabe señalar que**: Dentro de la carpeta 08-10-2021 y diversas partes más se encuentra una carpeta llamada **FabryPeror**. Esta carpeta contiene los codigos escenciales para llevar a cabo la serie discreta de Fourier (FFT) así como el filtrado de la señal y la ténica windowing en Python. Dichos codigos están documentados y no es necesario que se explique el functionamiento a detalle en esta sección.
+**Cabe señalar que**: Dentro de la carpeta 08-10-2021 y diversas partes más se encuentra una carpeta llamada **FabryPerot**. Esta carpeta contiene los codigos escenciales para llevar a cabo la serie discreta de Fourier (FFT) así como el filtrado de la señal y la ténica windowing en Python. Dichos codigos están documentados y no es necesario que se explique el functionamiento a detalle en esta sección.
+
+### Mediciones
+
+
 
 ## Simulacion_FPI_Serie
+
 Contiene la simulacion de un interferometro de Fabry-Perot de dos cavidades para la señal de la reflectancia. Se realiza una animación de la variación de la señal conforme al parámetro $L_{1}$, que es la longitud de la primera cavidad. Además se ha realizado la transformada de fourier de la señal.
 
+- main.py: Contiene una prueba sencilla de como realizar un simulación con los códigos mencionados.
+- animación.py: Contiene el codigo necesario para realizar un video en formato .mp4 del comportamiento de la reflectancia (simulada) variando la longitud de una de las cavidades (se puede modificar según las necesidades)
+- test_procesado_simulacion.py: Aplica los mismo métodos de mejora de la señal que se han aplicado a los espectros de laboratorio, a la reflectancia simulada.
+- FFT.py: Encuentra la serie discreta de Fourier de la simulación para determinadas condiciones.
+
+**Todos los códigos están documentados.**
+
 ## Simulacion_FPI_Paralelo
+
+Contiene la simulacion de un interferometro de Fabry-Perot de dos cavidades para la señal de la reflectancia. Se realiza una animación de la variación de la señal conforme al parámetro $L_{1}$, que es la longitud de la primera cavidad. Además se ha realizado la transformada de fourier de la señal.
+
+- animacion.py: Contiene el codigo necesario para realizar un video en formato .mp4 del comportamiento de la reflectancia (simulada) variando la longitud de una de las cavidades (se puede modificar según las necesidades)
+- test_clase: Aplica los mismo métodos de mejora de la señal que se han aplicado a los espectros de laboratorio, a la reflectancia simulada.
+
