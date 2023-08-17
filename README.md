@@ -18,7 +18,7 @@ Todos los códidos estan desarrollados en Python 3.9.4 y haciendo uso de Anacond
 
 # Contenido
 
-Se detalla brevemente el condetido de cada carpeta.
+Se detalla brevemente el condetido de cada carpeta. 
 
 ## Mediciones
 
